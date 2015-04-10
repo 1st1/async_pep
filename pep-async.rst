@@ -16,32 +16,41 @@ Resolution:
 Abstract
 ========
 
-This PEP introduces a new syntax for coroutines.  As of now, coroutines in
-python are usually implemented using generators and ``yield from`` syntax.
-Documentation of standard library module [asyncio]_ also recommends using
-``\@asyncio.coroutine`` decorator for documentation and better code readability
-purposes.  While this approach works fairly well, it requires users to
-understand generators, such as difference between ``yield`` and ``yield from``.
-Also, many frameworks still implement coroutines with ``yield`` and
+This PEP introduces a new syntax for coroutines, asynchronous with statements
+and for loops.  The main motivation behind this proposal is to streamline
+writing and maintaining asynchronous code, as well as to simplify previously
+hard to implement code patterns.
+
+
+Rationale and Goals
+===================
+
+As of now, coroutines in python are usually implemented using generators and
+``yield from`` syntax. Documentation of standard library module [asyncio]_ also
+recommends using ``\@asyncio.coroutine`` decorator for documentation and better
+code readability purposes.  While this approach works fairly well, it requires
+users to understand generators, such as difference between ``yield`` and ``yield
+from``. Also, many frameworks still implement coroutines with ``yield`` and
 trampolines, which is a much slower approach.
 
-This proposal aims at making coroutines a first class construct in Python,
-which will make asynchronous code easier to write and read. It
-separates syntactically coroutines from generators, which allows for
-unambiguous simultaneous usage of two concepts in close proximity.
-It should also help linters and IDEs to improve code static analysis and
-refactoring.
+This proposal aims at making coroutines a first class construct in Python to
+clearly separate generators from coroutines.  This will allow unambiguous usage
+of generators in coroutines close to each other, but avoid intermixing them by
+mistake.  It should also help linters and IDEs to improve code static analysis
+and refactoring.
 
-Clear separation of generators and coroutines also opens up opportunities to
-introduce new asynchronous context managers and iteration protocol in the
-future (see `Possible Future Developments`_).
-
-async/await aren't new concepts in computer languages. C# has had it for
-years, and there are proposals to add them in C++ and JavaScript.
+The other side of this proposal is to enable asynchronous context managers and
+iteration protocol.  For example, it is impossible to implement a context
+manager that blocks in its ``__exit__`` method, or to have an iterator over
+database cursor that prefetches data asynchronously as you iterate over it.
 
 
 Specification
 =============
+
+async/await aren't new concepts in computer languages. C# has had it for years,
+and there are proposals to add them in C++ and JavaScript.
+
 
 New Coroutines Declaration Syntax
 ---------------------------------
@@ -51,15 +60,14 @@ Use ``async`` and ``def`` keywords to declare a coroutine::
     async def read_data(db):
         ...
 
-
 Coroutines are always generators, even if they do not contain ``await``
 expressions.
 
-It's a syntax error to have ``yield`` or ``yield from`` expressions in
-``async`` function.
+It's a syntax error to have ``yield`` or ``yield from`` expressions in ``async``
+function.
 
-A new bit flag for ``co_flag`` field of code objects will be introduced to
-allow runtime detection of coroutine objects.
+A new bit flag for ``co_flag`` field of code objects will be introduced to allow
+runtime detection of coroutine objects.
 
 
 Await Expression
@@ -71,7 +79,62 @@ Await expression is almost a direct equivalent of ``yield from``::
         data = await db.fetch('SELECT ...')
         ...
 
-One notable difference is that it can only be used in ``async`` functions.
+It will share most of the ``yield from`` implementation with an extra step of
+validating its argument.  Only ``async`` functions and `asynchronous iterators`_
+(with a ``__aiter__`` method) will be accepted.
+
+It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
+
+
+Asynchronous Context Managers
+-----------------------------
+
+An asynchronous Context Manager will be able to suspend execution in its *enter*
+and *exit* methods.
+
+To make it possible we propose to add a new protocol for asynchronous context
+managers. Two new dunder methods will be added: ``__aenter__`` and
+``__aexit__``.  Both must either return an `asynchronous iterator`_, or be an
+``async`` function.
+
+For example, this will make it possible to implement a proper database
+transaction manager for coroutines::
+
+    async def commit(session, data):
+        ...
+
+        async with session.transaction():
+            ...
+            await session.update(data)
+            ...
+
+Code that needs locking will also look lighter::
+
+    async with lock:
+        ...
+
+instead of::
+
+    with (yield lock):
+        ...
+
+
+Asynchronous Iterators
+----------------------
+
+An asynchronous iterator will be able to call asynchronous code in its *next*
+implementation.  We propose a new iteration protocol: an object that supports
+asynchronous iteration must implement a ``__aiter__`` method, which must
+in turn return an object with ``__anext__`` method.
+
+With asynchronous iteration protocol it will be possible to asynchronously
+fetch data during the iteration:
+
+    async for data in cursor:
+        ...
+
+Where ``cursor`` is an asynchronous iterator that prefetches ``N`` rows
+of data after every ``N`` iterations.
 
 
 Transition Plan
@@ -103,6 +166,11 @@ As of April 9, 2015; 'master' branches:
 A script to conveniently examine code for 'async' and 'await' names
 usage can be found here: [script]_.
 
+To avoid problems with *async* keyword, we propose to modify tokenizer to treat
+``async def``, ``async for`` and ``async with`` as one token. This is a viable
+strategy since *async* is a modifier keyword and shouldn't be ever used without
+a keyword immediately following it.
+
 
 Design Considerations
 =====================
@@ -123,56 +191,6 @@ functions in a Future object, but this has the following disadvantages:
    slower (disabling optimizations of ``yield from``).
 
 2. A new built-in ``Future`` object will need to be added.
-
-
-Possible Future Developments
-============================
-
-Addition of ``async`` keyword opens up opportunities to enhance existing
-Python language constructs.
-
-Note that ideas in this section are here only to explore future opportunities,
-and discussion of their implementation details should be avoided.
-
-
-Asynchronous Context Managers
------------------------------
-
-An asynchronous Context Manager will be able to suspend execution in its
-``__enter__`` and ``__exit__`` methods (maybe we will need to introduce a
-new protocol), which, for example will make it possible to implement a
-proper database transaction manager for coroutines::
-
-    async def commit(data):
-        session = await pool.get_session()
-
-        async with session.transaction():
-            ...
-            await session.update(data)
-            ...
-
-Code that needs locking will also look lighter::
-
-    async with lock:
-        ...
-
-instead of::
-
-    with (yield lock):
-        ...
-
-
-Asynchronous Iterators
-----------------------
-
-With asynchronous iteration protocol it will be possible to asynchronously
-fetch data during the iteration:
-
-    async for data in cursor:
-        ...
-
-Where ``cursor`` is an asynchronous iterator that prefetches ``N`` rows
-of data after every ``N`` iterations.
 
 
 References
