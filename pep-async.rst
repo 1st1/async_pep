@@ -69,6 +69,10 @@ function.
 A new bit flag for ``co_flag`` field of code objects will be introduced to allow
 runtime detection of coroutine objects.
 
+Asynchronous functions will return an instance of a subclassed generator with a
+custom ``__del__`` implementation that will issue a ``RuntimeWarning`` if an
+asynchronous function was not ever awaited on.
+
 
 Await Expression
 ----------------
@@ -80,22 +84,31 @@ Await expression is almost a direct equivalent of ``yield from``::
         ...
 
 It will share most of the ``yield from`` implementation with an extra step of
-validating its argument.  Only ``async`` functions and `asynchronous iterators`_
-(with a ``__aiter__`` method) will be accepted.
+validating its argument.  It will only accept:
+
+ * ``async`` functions;
+
+ * objects with its ``__iter__`` method tagged with ``__async__ = True``
+   attribute.  This is to enable backwards compatibility and to enable use of
+   bare ``yield`` statements to suspend code execution in a chain of ``await``
+   calls.  We will call such objects as *Future-like* objects in the rest of
+   this PEP.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
 
-Asynchronous Context Managers
------------------------------
+Asynchronous Context Managers and "async with"
+----------------------------------------------
 
 An asynchronous Context Manager will be able to suspend execution in its *enter*
 and *exit* methods.
 
 To make it possible we propose to add a new protocol for asynchronous context
-managers. Two new dunder methods will be added: ``__aenter__`` and
-``__aexit__``.  Both must either return an `asynchronous iterator`_, or be an
+managers. Two new magic methods will be added: ``__aenter__`` and
+``__aexit__``.  Both must either return a *Future-like* object, or be an
 ``async`` function.
+
+It is an error to pass a regular context manager to ``async with``.
 
 For example, this will make it possible to implement a proper database
 transaction manager for coroutines::
@@ -119,22 +132,69 @@ instead of::
         ...
 
 
-Asynchronous Iterators
-----------------------
+Asynchronous Iterators and "async for"
+--------------------------------------
 
 An asynchronous iterator will be able to call asynchronous code in its *next*
 implementation.  We propose a new iteration protocol: an object that supports
-asynchronous iteration must implement a ``__aiter__`` method, which must
-in turn return an object with ``__anext__`` method.
+asynchronous iteration must implement a ``__aiter__`` method, which must in turn
+return an object with ``__anext__`` asynchronous method.
 
-With asynchronous iteration protocol it will be possible to asynchronously
-fetch data during the iteration:
+Since it is prohibited to have ``yield``s inside async methods, it's not
+possible to create asynchronous iterators by creating a generator with both
+``await`` and ``yield`` expressions.
+
+We propose a new syntax for iterating through asynchronous iterators::
+
+    async for i in iterator:
+        ...
+
+The existing built-ins ``next()`` and ``iter()`` will not work with asynchronous
+iterators.  Adding new built-in functions ``anext()`` and ``aiter()`` is
+trivial, but having them is not essential.
+
+For the sake of restricting the broadness of this PEP there is no new syntax
+for asynchronous comprehensions.  This should be considered in a separate PEP.
+
+Example: with asynchronous iteration protocol it will be possible to
+asynchronously buffer data during the iteration::
 
     async for data in cursor:
         ...
 
 Where ``cursor`` is an asynchronous iterator that prefetches ``N`` rows
 of data after every ``N`` iterations.
+
+The following code illustrates new asynchronous iteration protocol::
+
+    class Cursor:
+        ...
+
+        def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            if not self.buffer:
+                self.buffer = await self.fill_buffer()
+                if not self.buffer:
+                    raise StopIteration
+            return self.buffer.pop()
+
+then the ``Cursor`` class can be used as follows::
+
+    async for row in Cursor():
+        print(row)
+
+which would be equivalent to the following code::
+
+    while True:
+        i = Cursor().__aiter__()
+        try:
+            row = await i.__anext__()
+        except StopIteration:
+            break
+        else:
+            print(row)
 
 
 Transition Plan
@@ -163,8 +223,8 @@ As of April 9, 2015; 'master' branches:
  Gevent                 | 0               | 8 (class attribute)
  Gunicorn               | 0               | 6 (module name)
 
-A script to conveniently examine code for 'async' and 'await' names
-usage can be found here: [script]_.
+A script to conveniently examine code for 'async' and 'await' names usage can be
+found here: [script]_.
 
 To avoid problems with *async* keyword, we propose to modify tokenizer to treat
 ``async def``, ``async for`` and ``async with`` as one token. This is a viable
