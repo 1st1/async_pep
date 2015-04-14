@@ -422,6 +422,16 @@ Also, async/await is not a new concept in programming languages.  C# has had
 it for years, and there are proposals to add them in JavaScript and C++.
 
 
+Why "async def"
+---------------
+
+For some people bare ``async name(): pass`` syntax might look more appealing
+than ``async def name(): pass``.  It is certainly easier to type.  But on the
+other hand, it breaks the symmetry between ``async def``, ``async with`` and
+``async for``, where ``async`` is a modifier, stating that the statement is
+asynchronous.  It is also more consistent with the existing grammar.
+
+
 Reference Implementation
 ========================
 
