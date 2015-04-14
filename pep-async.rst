@@ -133,6 +133,10 @@ managers. Two new magic methods will be added: ``__aenter__`` and
 ``__aexit__``.  Both must either return a **Future-like** object, or be an
 ``async`` function.
 
+
+New Syntax
+++++++++++
+
 We propose a new statement for the new protocol::
 
     async with EXPR as VAR:
@@ -168,8 +172,12 @@ managers.
 It is an error to pass a regular context manager without ``__aenter__`` and
 ``__aexit__`` methods to ``async with``.
 
-For example, this will make it possible to implement a proper database
-transaction manager for coroutines::
+
+Example
++++++++
+
+With async context managers it is easy to implement proper database transaction
+managers for coroutines::
 
     async def commit(session, data):
         ...
@@ -204,6 +212,10 @@ Since it is prohibited to have ``yield`` inside async methods, it's not
 possible to create asynchronous iterators by creating a generator with both
 ``await`` and ``yield`` expressions.
 
+
+New Syntax
+++++++++++
+
 We propose a new statement for iterating through asynchronous iterators::
 
     async for TARGET in ITER:
@@ -222,15 +234,30 @@ which is roughly equivalent to::
         BLOCK
 
 
+As for with regular ``for`` statement, ``async for`` will have an optional
+``else`` clause.
+
+
+anext() and aiter()
++++++++++++++++++++
+
 The existing built-ins ``next()`` and ``iter()`` will not work with asynchronous
 iterators.  A pair of new built-in functions ``anext()`` and ``aiter()`` will
 be added.
 
+
+Comprehensions
+++++++++++++++
+
 For the sake of restricting the broadness of this PEP there is no new syntax
 for asynchronous comprehensions.  This should be considered in a separate PEP.
 
-Example: with asynchronous iteration protocol it will be possible to
-asynchronously buffer data during the iteration::
+
+Example
++++++++
+
+With asynchronous iteration protocol it will be possible to asynchronously
+buffer data during the iteration::
 
     async for data in cursor:
         ...
@@ -298,6 +325,9 @@ There is no observable slowdown of parsing python files with the modified
 tokenizer: parsing of one 12Mb file (``Lib/test/test_binop.py`` repeated 1000
 times) takes the same amount of time.
 
+Grammar Updates
+---------------
+
 Grammar changes are also fairly minimal::
 
     await_expr: AWAIT test
@@ -320,8 +350,15 @@ Grammar changes are also fairly minimal::
                         ('=' (yield_expr|await_expr|testlist_star_expr))*)
 
 
+Deprecation Plans
+-----------------
+
 ``async`` and ``await`` names will be softly deprecated in CPython 3.5 and 3.6,
 and in 3.7 we may consider transforming them to proper keywords.
+
+
+asyncio
+-------
 
 ``asyncio`` module will be adapted and tested to work with async functions and
 new statements.  Backwards compatibility will be 100% preserved.
