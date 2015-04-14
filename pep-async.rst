@@ -27,7 +27,7 @@ Rationale and Goals
 
 Coroutines in Python are usually implemented using generators and the ``yield
 from`` syntax.  Documentation of the [asyncio]_ module in the standard library
-recommends using the ``\@asyncio.coroutine`` decorator to state intent
+recommends using the ``@asyncio.coroutine`` decorator to state intent
 (documentation) and ease debugging (developer efficiency).  This approach
 requires users to understand generators, most importantly the difference between
 ``yield`` and ``yield from``. Existing Python 2-compatible third-party
@@ -72,7 +72,7 @@ object's ``tp_finalize`` implementation will be tweaked to raise a
 ``RuntimeWarning`` if the ``send`` method was never called on it (only for
 functions with ``CO_ASYNC`` bit in ``co_flag``).  This is an extremely important
 feature, since omitting a ``yield from`` is a common mistake.
-``\@asyncio.coroutine`` decorator addresses the problem by wrapping generators
+``@asyncio.coroutine`` decorator addresses the problem by wrapping generators
 with a special object in asyncio debug mode; however, we believe, that only
 a small fraction of asyncio users knows about it::
 
