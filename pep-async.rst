@@ -116,11 +116,6 @@ validating its argument.  It will only accept:
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
-A new function is added to ``types`` module: ``asyncdef(gen)``.  It adds
-``CO_ASYNC`` bit to the passed generator's code object, so that it can be
-awaited on in async functions.  This is how all asyncio code and its libraries
-will automatically benefit from this proposal.
-
 
 Asynchronous Context Managers and "async with"
 ----------------------------------------------
@@ -357,11 +352,27 @@ Deprecation Plans
 and in 3.7 we may consider transforming them to proper keywords.
 
 
+types.asyncdef()
+----------------
+
+A new function will be added to the ``types`` module: ``asyncdef(gen)``.  It
+will apply ``CO_ASYNC`` bit to the passed generator's code object, so that it
+can be awaited on in async functions.  This is to enable an easy upgrade path
+for existing libraries.
+
+
 asyncio
 -------
 
 ``asyncio`` module will be adapted and tested to work with async functions and
 new statements.  Backwards compatibility will be 100% preserved.
+
+The required changes are mainly:
+
+1. Modify ``@asyncio.coroutine`` decorator to use new ``types.asyncdef()``
+   function on all wrapped generators.
+
+2. Add ``__async__ = True`` attribute to ``asyncio.Future.__iter__`` method.
 
 
 Design Considerations
