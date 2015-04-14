@@ -66,12 +66,28 @@ expressions.
 It's a syntax error to have ``yield`` or ``yield from`` expressions in ``async``
 function.
 
-A new bit flag for ``co_flag`` field of code objects will be introduced to allow
-runtime detection of coroutine objects.
+A new bit flag ``CO_ASYNC`` for ``co_flag`` field of code objects will be
+introduced to allow runtime detection of coroutine objects.
 
-Asynchronous functions will return an instance of a subclassed generator with a
-custom ``__del__`` implementation that will issue a ``RuntimeWarning`` if an
-asynchronous function was not ever awaited on.
+To make sure that asynchronous functions are always awaited on, the generator
+object's ``tp_finalize`` implementation will be tweaked to raise a
+``RuntimeWarning`` if the ``send`` method was never called on it (only for
+functions with ``CO_ASYNC`` bit in ``co_flag``).  This is an extremely important
+feature, since omitting a ``yield from`` is a common mistake.
+``\@asyncio.coroutine`` decorator addresses the problem by wrapping generators
+with a special object in asyncio debug mode; however, we believe, that only
+a small fraction of asyncio users knows about it::
+
+    async def read():
+        ...
+    # later in the code:
+    read() # this line will raise a warning
+
+``StopIteration`` exceptions will not be propagated out of async functions. This
+feature can be enabled for regular generators in CPython 3.5 with a special
+future import statement (see PEP 479).  Since the new syntax will not require
+future imports nor it was possible to have async functions before 3.5, it is
+safe to enable this feature by default.
 
 
 Await Expression
@@ -88,6 +104,8 @@ validating its argument.  It will only accept:
 
  * ``async`` functions;
 
+ * generators with ``CO_ASYNC`` in their ``gi_code.co_flags``;
+
  * objects with its ``__iter__`` method tagged with ``__async__ = True``
    attribute.  This is to enable backwards compatibility and to enable use of
    bare ``yield`` statements to suspend code execution in a chain of ``await``
@@ -95,6 +113,11 @@ validating its argument.  It will only accept:
    this PEP.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
+
+A new function is added to ``types`` module: ``asyncdef(gen)``.  It adds
+``CO_ASYNC`` bit to the passed generator's code object, so that it can be
+awaited on in async functions.  This is how all asyncio code and its libraries
+will automatically benefit from this proposal.
 
 
 Asynchronous Context Managers and "async with"
@@ -108,7 +131,8 @@ managers. Two new magic methods will be added: ``__aenter__`` and
 ``__aexit__``.  Both must either return a *Future-like* object, or be an
 ``async`` function.
 
-It is an error to pass a regular context manager to ``async with``.
+It is an error to pass a regular context manager without ``__aenter__`` and
+``__aexit__`` methods to ``async with``.
 
 For example, this will make it possible to implement a proper database
 transaction manager for coroutines::
@@ -128,19 +152,21 @@ Code that needs locking will also look lighter::
 
 instead of::
 
-    with (yield lock):
+    with (yield from lock):
         ...
 
 
 Asynchronous Iterators and "async for"
 --------------------------------------
 
-An asynchronous iterator will be able to call asynchronous code in its *next*
-implementation.  We propose a new iteration protocol: an object that supports
-asynchronous iteration must implement a ``__aiter__`` method, which must in turn
-return an object with ``__anext__`` asynchronous method.
+An asynchronous iterator will be able to call asynchronous code in its magic
+**next** implementation.  We propose a new iteration protocol: an object that
+supports asynchronous iteration must implement a ``__aiter__`` method, which
+must in turn return an object with ``__anext__`` asynchronous method.
+``__anext__`` must raise a ``StopAsyncIteration`` exception when the iteration
+is over.
 
-Since it is prohibited to have ``yield``s inside async methods, it's not
+Since it is prohibited to have ``yield`` inside async methods, it's not
 possible to create asynchronous iterators by creating a generator with both
 ``await`` and ``yield`` expressions.
 
@@ -150,8 +176,8 @@ We propose a new syntax for iterating through asynchronous iterators::
         ...
 
 The existing built-ins ``next()`` and ``iter()`` will not work with asynchronous
-iterators.  Adding new built-in functions ``anext()`` and ``aiter()`` is
-trivial, but having them is not essential.
+iterators.  A pair of new built-in functions ``anext()`` and ``aiter()`` will
+be added.
 
 For the sake of restricting the broadness of this PEP there is no new syntax
 for asynchronous comprehensions.  This should be considered in a separate PEP.
@@ -168,7 +194,15 @@ of data after every ``N`` iterations.
 The following code illustrates new asynchronous iteration protocol::
 
     class Cursor:
-        ...
+        def __init__(self):
+            self.buffer = collections.deque()
+
+        def fill_buffer(self):
+            ...
+
+        def __iter__(self):
+            # You can't iterate with bare 'for in'
+            raise NotImplementedError
 
         def __aiter__(self):
             return self
@@ -177,8 +211,8 @@ The following code illustrates new asynchronous iteration protocol::
             if not self.buffer:
                 self.buffer = await self.fill_buffer()
                 if not self.buffer:
-                    raise StopIteration
-            return self.buffer.pop()
+                    raise StopAsyncIteration
+            return self.buffer.popleft()
 
 then the ``Cursor`` class can be used as follows::
 
@@ -187,8 +221,8 @@ then the ``Cursor`` class can be used as follows::
 
 which would be equivalent to the following code::
 
+    i = Cursor().__aiter__()
     while True:
-        i = Cursor().__aiter__()
         try:
             row = await i.__anext__()
         except StopIteration:
@@ -197,39 +231,45 @@ which would be equivalent to the following code::
             print(row)
 
 
+
 Transition Plan
 ===============
 
-The feature will be enabled by future import in CPython 3.5::
+To avoid backwards compatibility issues with *async* and *await* keywords, it
+was decided to modify ``tokenizer.c`` in such a way, that it will:
 
-    from __future__ import async_await
+ * recognize ``async def`` name tokens combination;
+ * keep track of regular and async functions;
+ * replace ``'async'`` token with ``ASYNC`` and ``'await'`` token with ``AWAIT``
+   when in the process of yielding tokens for async functions.
 
-In CPython 3.6 the feature will be enabled by default.
+This approach allows for seamless combination of new syntax features (all of
+them available only in ``async`` functions) with any existing code.
 
+There is no observable slowdown of parsing python files with the modified
+tokenizer: parsing of one 12Mb file (``Lib/test/test_binop.py`` repeated 1000
+times) takes the same amount of time.
 
-Keywords occurrence in existing code
-------------------------------------
+Grammar changes are also fairly minimal::
 
-As of April 9, 2015; 'master' branches:
+    await_expr: AWAIT test
+    await_stmt: await_expr
 
- Project                | "await" names   | "async" names
- -----------------------+-----------------+---------------------
- Standard Library       | 0               | 32 (asyncio mostly)
- Tornado                | 0               | 1 (asyncio func)
- Django                 | 0               | 0
- Flask                  | 0               | 0
- Celery                 | 0               | 15 (module name)
- Werkzeug               | 0               | 0
- Gevent                 | 0               | 8 (class attribute)
- Gunicorn               | 0               | 6 (module name)
+    decorated: decorators (classdef | funcdef | async_funcdef)
+    async_funcdef: ASYNC funcdef
 
-A script to conveniently examine code for 'async' and 'await' names usage can be
-found here: [script]_.
+    async_stmt: ASYNC (funcdef | with_stmt) # will add for_stmt later
 
-To avoid problems with *async* keyword, we propose to modify tokenizer to treat
-``async def``, ``async for`` and ``async with`` as one token. This is a viable
-strategy since *async* is a modifier keyword and shouldn't be ever used without
-a keyword immediately following it.
+    compound_stmt: (if_stmt | while_stmt | for_stmt | try_stmt | with_stmt
+                  | funcdef | classdef | decorated | async_stmt)
+
+    atom: ('(' [yield_expr|await_expr|testlist_comp] ')' |
+          '[' [testlist_comp] ']' |
+          '{' [dictorsetmaker] '}' |
+          NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False’)
+
+    expr_stmt: testlist_star_expr (augassign (yield_expr|await_expr|testlist) |
+                        ('=' (yield_expr|await_expr|testlist_star_expr))*)
 
 
 Design Considerations
@@ -253,6 +293,12 @@ functions in a Future object, but this has the following disadvantages:
 2. A new built-in ``Future`` object will need to be added.
 
 
+Reference Implementation
+========================
+
+The reference implementation can be found here: [impl]_.
+
+
 References
 ==========
 
@@ -264,3 +310,6 @@ References
 
 .. [script]
    https://gist.github.com/1st1/acfd5709e24cd07d9424
+
+.. [impl]
+   https://github.com/1st1/cpython/tree/await
