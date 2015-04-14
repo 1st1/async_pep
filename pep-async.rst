@@ -16,33 +16,35 @@ Resolution:
 Abstract
 ========
 
-This PEP introduces a new syntax for coroutines, asynchronous with statements
-and for loops.  The main motivation behind this proposal is to streamline
-writing and maintaining asynchronous code, as well as to simplify previously
-hard to implement code patterns.
+This PEP introduces a new syntax for coroutines, asynchronous ``with``
+statements and ``for`` loops.  The main motivation behind this proposal is to
+streamline writing and maintaining asynchronous code, as well as to simplify
+previously hard to implement code patterns.
 
 
 Rationale and Goals
 ===================
 
-As of now, coroutines in python are usually implemented using generators and
-``yield from`` syntax. Documentation of standard library module [asyncio]_ also
-recommends using ``\@asyncio.coroutine`` decorator for documentation and better
-code readability purposes.  While this approach works fairly well, it requires
-users to understand generators, such as difference between ``yield`` and ``yield
-from``. Also, many frameworks still implement coroutines with ``yield`` and
-trampolines, which is a much slower approach.
+Coroutines in Python are usually implemented using generators and the ``yield
+from`` syntax.  Documentation of the [asyncio]_ module in the standard library
+recommends using the ``\@asyncio.coroutine`` decorator to state intent
+(documentation) and ease debugging (developer efficiency).  This approach
+requires users to understand generators, most importantly the difference between
+``yield`` and ``yield from``. Existing Python 2-compatible third-party
+frameworks, including the ``asyncio`` backport [trollius]_, implement coroutines
+using ``yield`` and trampolines, adding to the confusion.
 
-This proposal aims at making coroutines a first class construct in Python to
-clearly separate generators from coroutines.  This will allow unambiguous usage
-of generators in coroutines close to each other, but avoid intermixing them by
-mistake.  It should also help linters and IDEs to improve code static analysis
-and refactoring.
+This proposal makes coroutines a first class construct in Python to clearly
+separate them from generators.  This allows unambiguous usage of generators and
+coroutines close to each other, as well as helps to avoid intermixing them by
+mistake.  It also enables linters and IDEs to improve code static analysis and
+refactoring.
 
-The other side of this proposal is to enable asynchronous context managers and
-iteration protocol.  For example, it is impossible to implement a context
-manager that blocks in its ``__exit__`` method, or to have an iterator over
-database cursor that prefetches data asynchronously as you iterate over it.
+Introducing the ``async`` keyword enables creation of asynchronous context
+manager and iteration protocols.  The former lets Python perform non-blocking
+operations upon entering and exiting the context manager, while the latter lets
+Python perform non-blocking operations during iteration steps (in an equivalent
+of ``__next__()``).
 
 
 Specification
@@ -304,6 +306,9 @@ References
 
 .. [asyncio]
    https://docs.python.org/3/library/asyncio.html
+
+.. [trollius]
+   https://pypi.python.org/pypi/trollius
 
 .. [ES7]
    http://wiki.ecmascript.org/doku.php?id=strawman:async_functions
