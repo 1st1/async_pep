@@ -26,12 +26,12 @@ Rationale and Goals
 ===================
 
 Coroutines in Python are usually implemented using generators and the ``yield
-from`` syntax.  Documentation of the [asyncio]_ module in the standard library
+from`` syntax.  Documentation of the [1]_ module in the standard library
 recommends using the ``@asyncio.coroutine`` decorator to state intent
 (documentation) and ease debugging (developer efficiency).  This approach
 requires users to understand generators, most importantly the difference between
 ``yield`` and ``yield from``. Existing Python 2-compatible third-party
-frameworks, including the ``asyncio`` backport [trollius]_, implement coroutines
+frameworks, including the ``asyncio`` backport [2]_, implement coroutines
 using ``yield`` and trampolines, adding to the confusion.
 
 This proposal makes coroutines a first class construct in Python to clearly
@@ -333,7 +333,7 @@ Design Considerations
 No implicit wrapping in Futures
 -------------------------------
 
-There is a proposal to add similar mechanism to [ES7]_.  A key difference
+There is a proposal to add similar mechanism to [3]_.  A key difference
 is that JavaScript async functions will always return a Promise. While this
 approach has some advantages, it also implies that a new Promise object will
 be created on each async function invocation.
@@ -377,23 +377,20 @@ it for years, and there are proposals to add them in JavaScript and C++.
 Reference Implementation
 ========================
 
-The reference implementation can be found here: [impl]_.
+The reference implementation can be found here: [4]_.
 
 
 References
 ==========
 
-.. [asyncio]
+.. [1]
    https://docs.python.org/3/library/asyncio.html
 
-.. [trollius]
+.. [2]
    https://pypi.python.org/pypi/trollius
 
-.. [ES7]
+.. [3]
    http://wiki.ecmascript.org/doku.php?id=strawman:async_functions
 
-.. [script]
-   https://gist.github.com/1st1/acfd5709e24cd07d9424
-
-.. [impl]
+.. [4]
    https://github.com/1st1/cpython/tree/await
