@@ -26,13 +26,13 @@ Rationale and Goals
 ===================
 
 Coroutines in Python are usually implemented using generators and the ``yield
-from`` syntax.  Documentation of the [1]_ module in the standard library
+from`` syntax.  Documentation of the asyncio [1]_ module in the standard library
 recommends using the ``@asyncio.coroutine`` decorator to state intent
 (documentation) and ease debugging (developer efficiency).  This approach
 requires users to understand generators, most importantly the difference between
 ``yield`` and ``yield from``. Existing Python 2-compatible third-party
-frameworks, including the ``asyncio`` backport [2]_, implement coroutines
-using ``yield`` and trampolines, adding to the confusion.
+frameworks, including the ``asyncio`` backport trollius [2]_, implement
+coroutines using ``yield`` and trampolines, adding to the confusion.
 
 This proposal makes coroutines a first class construct in Python to clearly
 separate them from generators.  This allows unambiguous usage of generators and
@@ -370,10 +370,10 @@ Design Considerations
 No implicit wrapping in Futures
 -------------------------------
 
-There is a proposal to add similar mechanism to [3]_.  A key difference
-is that JavaScript async functions will always return a Promise. While this
-approach has some advantages, it also implies that a new Promise object will
-be created on each async function invocation.
+There is a proposal to add similar mechanism to ECMAScript 7 [3]_.  A key
+difference is that JavaScript async functions will always return a Promise.
+While this approach has some advantages, it also implies that a new Promise
+object will be created on each async function invocation.
 
 We could implement a similar functionality in Python, by wrapping all async
 functions in a Future object, but this has the following disadvantages:
