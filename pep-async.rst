@@ -420,14 +420,10 @@ The reference implementation can be found here: [4]_.
 References
 ==========
 
-.. [1]
-   https://docs.python.org/3/library/asyncio.html
+.. [1] https://docs.python.org/3/library/asyncio.html
 
-.. [2]
-   https://pypi.python.org/pypi/trollius
+.. [2] https://pypi.python.org/pypi/trollius
 
-.. [3]
-   http://wiki.ecmascript.org/doku.php?id=strawman:async_functions
+.. [3] http://wiki.ecmascript.org/doku.php?id=strawman:async_functions
 
-.. [4]
-   https://github.com/1st1/cpython/tree/await
+.. [4] https://github.com/1st1/cpython/tree/await
