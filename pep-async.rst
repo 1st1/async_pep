@@ -104,15 +104,15 @@ Await expression is almost a direct equivalent of ``yield from``::
 It will share most of the ``yield from`` implementation with an extra step of
 validating its argument.  It will only accept:
 
- * ``async`` functions;
+* ``async`` functions;
 
- * generators with ``CO_ASYNC`` in their ``gi_code.co_flags``;
+* generators with ``CO_ASYNC`` in their ``gi_code.co_flags``;
 
- * objects with its ``__iter__`` method tagged with ``__async__ = True``
-   attribute.  This is to enable backwards compatibility and to enable use of
-   bare ``yield`` statements to suspend code execution in a chain of ``await``
-   calls.  We will call such objects as *Future-like* objects in the rest of
-   this PEP.
+* objects with its ``__iter__`` method tagged with ``__async__ = True``
+  attribute.  This is to enable backwards compatibility and to enable use of
+  bare ``yield`` statements to suspend code execution in a chain of ``await``
+  calls.  We will call such objects as *Future-like* objects in the rest of
+  this PEP.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
