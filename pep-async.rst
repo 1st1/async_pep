@@ -319,6 +319,10 @@ Grammar changes are also fairly minimal::
                         ('=' (yield_expr|await_expr|testlist_star_expr))*)
 
 
+``async`` and ``await`` names will be softly deprecated in CPython 3.5 and 3.6,
+and in 3.7 we may consider transforming them to proper keywords.
+
+
 Design Considerations
 =====================
 
