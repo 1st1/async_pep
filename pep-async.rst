@@ -137,7 +137,7 @@ managers. Two new magic methods will be added: ``__aenter__`` and
 New Syntax
 ++++++++++
 
-We propose a new statement for the new protocol::
+We propose a new statement for asynchronous context managers::
 
     async with EXPR as VAR:
         BLOCK
