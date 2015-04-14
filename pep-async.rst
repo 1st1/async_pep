@@ -50,10 +50,6 @@ of ``__next__()``).
 Specification
 =============
 
-async/await aren't new concepts in computer languages. C# has had it for years,
-and there are proposals to add them in C++ and JavaScript.
-
-
 New Coroutines Declaration Syntax
 ---------------------------------
 
@@ -89,7 +85,7 @@ a small fraction of asyncio users knows about it::
 feature can be enabled for regular generators in CPython 3.5 with a special
 future import statement (see PEP 479).  Since the new syntax will not require
 future imports nor it was possible to have async functions before 3.5, it is
-safe to enable this feature by default.
+safe to enable this feature by default for all async functions.
 
 
 Await Expression
@@ -308,7 +304,7 @@ Grammar changes are also fairly minimal::
     async_stmt: ASYNC (funcdef | with_stmt) # will add for_stmt later
 
     compound_stmt: (if_stmt | while_stmt | for_stmt | try_stmt | with_stmt
-                  | funcdef | classdef | decorated | async_stmt)
+                   | funcdef | classdef | decorated | async_stmt)
 
     atom: ('(' [yield_expr|await_expr|testlist_comp] ')' |
           '[' [testlist_comp] ']' |
@@ -337,11 +333,37 @@ be created on each async function invocation.
 We could implement a similar functionality in Python, by wrapping all async
 functions in a Future object, but this has the following disadvantages:
 
-1. Performance.  A new Future object will be instantiated on each coroutine
+1. Performance.  A new Future object would be instantiated on each coroutine
    call.  Moreover, this will make implementation of ``await`` expressions
    slower (disabling optimizations of ``yield from``).
 
-2. A new built-in ``Future`` object will need to be added.
+2. A new built-in ``Future`` object would need to be added.
+
+
+Importance of "async" keyword
+-----------------------------
+
+While it is possible to just implement ``await`` expression and treat all
+functions with at least one ``await`` as async functions, this approach will
+make APIs design, code refactoring and its long time support harder.
+
+Let's pretend that Python only has ``await`` keyword::
+
+    def useful():
+        ...
+        await log(...)
+        ...
+
+    def important():
+        await useful()
+
+If ``useful()`` method is refactored and someone removes all ``await``
+expressions from it, it would become a regular python function, and all code
+that depends on it, including ``important()`` will be broken.  To mitigate this
+issue a decorator similar to ``@asyncio.coroutine`` has to be introduced.
+
+Also, async/await is not a new concept in programming languages.  C# has had
+it for years, and there are proposals to add them in JavaScript and C++.
 
 
 Reference Implementation
