@@ -133,6 +133,38 @@ managers. Two new magic methods will be added: ``__aenter__`` and
 ``__aexit__``.  Both must either return a *Future-like* object, or be an
 ``async`` function.
 
+We propose a new statement for the new protocol::
+
+    async with EXPR as VAR:
+        BLOCK
+
+
+which is roughly equivalent to::
+
+    mgr = (EXPR)
+    aexit = type(mgr).__aexit__
+    aenter = type(mgr).__aenter__(mgr)
+    exc = True
+
+    try:
+        try:
+            VAR = value
+            BLOCK
+        except:
+            exc = False
+            exit_res = await aexit(mgr, *sys.exc_info())
+            if not exit_res:
+                raise
+
+    finally:
+        if exc:
+            await aexit(mgr, None, None, None)
+
+
+As with regular ``with`` statements it is possible to specify a list of context
+managers.
+
+
 It is an error to pass a regular context manager without ``__aenter__`` and
 ``__aexit__`` methods to ``async with``.
 
@@ -172,10 +204,23 @@ Since it is prohibited to have ``yield`` inside async methods, it's not
 possible to create asynchronous iterators by creating a generator with both
 ``await`` and ``yield`` expressions.
 
-We propose a new syntax for iterating through asynchronous iterators::
+We propose a new statement for iterating through asynchronous iterators::
 
-    async for i in iterator:
-        ...
+    async for TARGET in ITER:
+        BLOCK
+
+which is roughly equivalent to::
+
+    iter = (ITER)
+    iter = type(iter).__aiter__(iter)
+    while True:
+        try:
+            TARGET = await type(iter).__anext__(iter)
+        except StopAsyncIteration:
+            break
+
+        BLOCK
+
 
 The existing built-ins ``next()`` and ``iter()`` will not work with asynchronous
 iterators.  A pair of new built-in functions ``anext()`` and ``aiter()`` will
