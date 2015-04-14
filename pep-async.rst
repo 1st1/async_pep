@@ -50,6 +50,10 @@ of ``__next__()``).
 Specification
 =============
 
+The proposed syntax enhancements are not tailored to any specific library.  Any
+framework that uses a concept of coroutines can benefit from this proposal.
+
+
 New Coroutines Declaration Syntax
 ---------------------------------
 
@@ -274,7 +278,6 @@ which would be equivalent to the following code::
             print(row)
 
 
-
 Transition Plan
 ===============
 
@@ -317,6 +320,9 @@ Grammar changes are also fairly minimal::
 
 ``async`` and ``await`` names will be softly deprecated in CPython 3.5 and 3.6,
 and in 3.7 we may consider transforming them to proper keywords.
+
+``asyncio`` module will be adapted and tested to work with async functions and
+new statements.  Backwards compatibility will be 100% preserved.
 
 
 Design Considerations
