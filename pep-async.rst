@@ -111,7 +111,7 @@ validating its argument.  It will only accept:
 * objects with its ``__iter__`` method tagged with ``__async__ = True``
   attribute.  This is to enable backwards compatibility and to enable use of
   bare ``yield`` statements to suspend code execution in a chain of ``await``
-  calls.  We will call such objects as *Future-like* objects in the rest of
+  calls.  We will call such objects as **Future-like** objects in the rest of
   this PEP.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
@@ -125,12 +125,12 @@ will automatically benefit from this proposal.
 Asynchronous Context Managers and "async with"
 ----------------------------------------------
 
-An asynchronous Context Manager will be able to suspend execution in its *enter*
-and *exit* methods.
+An asynchronous Context Manager will be able to suspend execution in its
+**enter** and **exit** methods.
 
 To make it possible we propose to add a new protocol for asynchronous context
 managers. Two new magic methods will be added: ``__aenter__`` and
-``__aexit__``.  Both must either return a *Future-like* object, or be an
+``__aexit__``.  Both must either return a **Future-like** object, or be an
 ``async`` function.
 
 We propose a new statement for the new protocol::
@@ -281,13 +281,15 @@ which would be equivalent to the following code::
 Transition Plan
 ===============
 
-To avoid backwards compatibility issues with *async* and *await* keywords, it
-was decided to modify ``tokenizer.c`` in such a way, that it will:
+To avoid backwards compatibility issues with **async** and **await** keywords,
+it was decided to modify ``tokenizer.c`` in such a way, that it will:
 
- * recognize ``async def`` name tokens combination;
- * keep track of regular and async functions;
- * replace ``'async'`` token with ``ASYNC`` and ``'await'`` token with ``AWAIT``
-   when in the process of yielding tokens for async functions.
+* recognize ``async def`` name tokens combination;
+
+* keep track of regular and async functions;
+
+* replace ``'async'`` token with ``ASYNC`` and ``'await'`` token with ``AWAIT``
+  when in the process of yielding tokens for async functions.
 
 This approach allows for seamless combination of new syntax features (all of
 them available only in ``async`` functions) with any existing code.
