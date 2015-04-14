@@ -345,6 +345,35 @@ Grammar changes are also fairly minimal::
                         ('=' (yield_expr|await_expr|testlist_star_expr))*)
 
 
+Transition Period Shortcomings
+------------------------------
+
+Until ``async`` and ``await`` are not proper keywords, it is not possible (or at
+least very hard) to implement support of ``await`` in function annotations.  One
+line ``async def`` with an ``await`` expression is not possible either::
+
+    # async and await will always be parsed as variables
+    async def foo(a=(await fut)): pass
+    async def foo(a:(await fut)): pass
+    async def foo() -> (await fut): pass
+    async def foo(): return (await fut)
+
+Since ``await`` and ``async`` in such cases are parsed as ``NAME`` tokens, a
+``SyntaxError`` will be raised.
+
+The above examples, however, are hard to parse for humans too, and can be easily
+rewritten to a more readable form::
+
+    # async and await will always be parsed as variables
+    a_default = await fut
+    async def foo(a=a_default): pass
+
+    # etc
+
+    async def foo():
+        return (await fut)
+
+
 Deprecation Plans
 -----------------
 
