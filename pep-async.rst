@@ -348,9 +348,12 @@ Grammar changes are also fairly minimal::
 Transition Period Shortcomings
 ------------------------------
 
+There is just one.
+
 Until ``async`` and ``await`` are not proper keywords, it is not possible (or at
-least very hard) to implement support of ``await`` in function annotations.  One
-line ``async def`` with an ``await`` expression is not possible either::
+least very hard) to fix ``tokenizer.c`` to recognize them in function
+annotations.  One line ``async def`` with an ``await`` expression is not
+possible either::
 
     # async and await will always be parsed as variables
     async def foo(a=(await fut)): pass
