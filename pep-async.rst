@@ -208,6 +208,29 @@ possible to create asynchronous iterators by creating a generator with both
 ``await`` and ``yield`` expressions.
 
 
+Why StopAsyncIteration?
++++++++++++++++++++++++
+
+Async functions are still generators.  So for python, there is no difference
+between::
+
+    def g1():
+        yield
+        return 'spam'
+
+and
+
+::
+
+    def g2():
+        yield
+        raise StopIteration('spam')
+
+The only way to tell the outside code that iteration must be stop is to raise
+something other than ``StopIteration``.  Therefore, a new built-in exception
+class ``StopAsyncIteration`` was added.
+
+
 New Syntax
 ++++++++++
 
