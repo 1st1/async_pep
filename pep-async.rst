@@ -212,7 +212,9 @@ Why StopAsyncIteration?
 +++++++++++++++++++++++
 
 Async functions are still generators.  So for python, there is no difference
-between::
+between
+
+::
 
     def g1():
         yield
