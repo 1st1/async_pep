@@ -211,13 +211,13 @@ possible to create asynchronous iterators by creating a generator with both
 Why StopAsyncIteration?
 +++++++++++++++++++++++
 
-Async functions are still generators.  So for python, there is no difference
-between
+Async functions are still generators.  So for python, there is no fundamental
+difference between
 
 ::
 
     def g1():
-        yield
+        yield from fut
         return 'spam'
 
 and
@@ -225,12 +225,29 @@ and
 ::
 
     def g2():
-        yield
+        yield from fut
         raise StopIteration('spam')
+
+and
+
+::
+
+    def a1():
+        await fut
+        raise StopIteration('spam')
+
+::
+
+    def a2():
+        await fut
+        return 'spam'
 
 The only way to tell the outside code that the iteration has ended is to raise
 something other than ``StopIteration``.  Therefore, a new built-in exception
 class ``StopAsyncIteration`` was added.
+
+Moreover, with semantics from PEP 479, all ``StopIteration`` exceptions raised
+in async functions will be wrapped in ``RuntimeError``.
 
 
 New Syntax
