@@ -198,10 +198,10 @@ Asynchronous Iterators and "async for"
 
 An asynchronous iterator will be able to call asynchronous code in its magic
 **next** implementation.  We propose a new iteration protocol: an object that
-supports asynchronous iteration must implement a ``__aiter__`` method, which
-must in turn return an object with ``__anext__`` asynchronous method.
-``__anext__`` must raise a ``StopAsyncIteration`` exception when the iteration
-is over.
+supports asynchronous iteration must implement a ``__aiter__`` asynchronous
+method, which must in turn return an object with ``__anext__`` asynchronous
+method. ``__anext__`` must raise a ``StopAsyncIteration`` exception when the
+iteration is over.
 
 Since it is prohibited to have ``yield`` inside async methods, it's not
 possible to create asynchronous iterators by creating a generator with both
@@ -273,7 +273,7 @@ The following code illustrates new asynchronous iteration protocol::
             # You can't iterate with bare 'for in'
             raise NotImplementedError
 
-        def __aiter__(self):
+        async def __aiter__(self):
             return self
 
         async def __anext__(self):
@@ -319,6 +319,16 @@ them available only in ``async`` functions) with any existing code.
 There is no observable slowdown of parsing python files with the modified
 tokenizer: parsing of one 12Mb file (``Lib/test/test_binop.py`` repeated 1000
 times) takes the same amount of time.
+
+
+Backwards Compatibility
+-----------------------
+
+The only backwards incompatible change is an extra argument ``is_async`` to
+``FunctionDef`` AST node.  But since it is a documented fact that the structure
+of AST nodes is an implementation detail and subject to change, this should not
+be considered as a serious issue.
+
 
 Grammar Updates
 ---------------
@@ -426,6 +436,19 @@ functions in a Future object, but this has the following disadvantages:
    slower (disabling optimizations of ``yield from``).
 
 2. A new built-in ``Future`` object would need to be added.
+
+
+Why "__aiter__" is async
+------------------------
+
+In principle, ``__aiter__`` could be a regular function.  There are several
+good reasons to make it ``async``:
+
+* as most of the ``__a*__`` methods are ``async``, users would often make
+  a mistake defining it as ``async`` anyways;
+
+* there might be a need to run some asynchronous operations in ``__aiter__``,
+  for instance to prepare DB queries or do some file operation.
 
 
 Importance of "async" keyword
