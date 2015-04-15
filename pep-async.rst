@@ -529,6 +529,18 @@ other hand, it breaks the symmetry between ``async def``, ``async with`` and
 asynchronous.  It is also more consistent with the existing grammar.
 
 
+Why not a "future" import
+-------------------------
+
+"Future" imports are inconvenient and easy to forget to add.  Also, they are
+enabled for the whole source file.  Consider that there is a big project with a
+popular module named "async.py".  With future imports it will be required to
+either import it using ``__import__()`` or ``importlib.import_module()`` calls,
+or to rename the module.  The proposed approach makes it possible to continue
+using old code and modules without a hassle, while coming up with a migration
+plan for future python versions.
+
+
 Reference Implementation
 ========================
 
