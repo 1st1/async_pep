@@ -313,6 +313,17 @@ then the ``Cursor`` class can be used as follows::
     async for row in Cursor():
         print(row)
 
+which would be equivalent to the following code::
+
+    i = Cursor().__aiter__()
+    while True:
+        try:
+            row = await i.__anext__()
+        except StopIteration:
+            break
+        else:
+            print(row)
+
 
 Transition Plan
 ===============
