@@ -358,6 +358,16 @@ it was decided to modify ``tokenizer.c`` in such a way, that it will:
 This approach allows for seamless combination of new syntax features (all of
 them available only in ``async`` functions) with any existing code.
 
+An example of having "async def" and "async" attribute in one piece of code::
+
+    class Spam:
+        async = 42
+
+    async def ham():
+        print(getattr(Spam, 'async'))
+
+    # The coroutine can be executed and will print '42'
+
 There is no observable slowdown of parsing python files with the modified
 tokenizer: parsing of one 12Mb file (``Lib/test/test_binop.py`` repeated 1000
 times) takes the same amount of time.
