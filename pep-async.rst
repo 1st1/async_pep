@@ -147,7 +147,7 @@ which is roughly equivalent to::
 
     try:
         try:
-            VAR = value
+            VAR = await aenter
             BLOCK
         except:
             exc = False
