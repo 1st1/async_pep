@@ -332,7 +332,7 @@ then the ``Cursor`` class can be used as follows::
 
 which would be equivalent to the following code::
 
-    i = Cursor().__aiter__()
+    i = await Cursor().__aiter__()
     while True:
         try:
             row = await i.__anext__()
