@@ -72,8 +72,8 @@ A new bit flag ``CO_ASYNC`` for ``co_flag`` field of code objects will be
 introduced to allow runtime detection of coroutine objects.
 
 To make sure that asynchronous functions are always awaited on, the generator
-object's ``tp_finalize`` implementation will be tweaked to raise a
-``RuntimeWarning`` if the ``send`` method was never called on it (only for
+object's ``tp_finalize`` implementation is tweaked to raise a
+``ResourceWarning`` if the ``send`` method was never called on it (only for
 functions with ``CO_ASYNC`` bit in ``co_flag``).  This is an extremely important
 feature, since omitting a ``yield from`` is a common mistake.
 ``@asyncio.coroutine`` decorator addresses the problem by wrapping generators
@@ -83,7 +83,7 @@ a small fraction of asyncio users knows about it::
     async def read():
         ...
     # later in the code:
-    read() # this line will raise a warning
+    read() # this line raises a ResourceWarning with a pointer to this line
 
 ``StopIteration`` exceptions will not be propagated out of async functions. This
 feature can be enabled for regular generators in CPython 3.5 with a special
