@@ -261,7 +261,7 @@ We propose a new statement for iterating through asynchronous iterators::
 which is roughly equivalent to::
 
     iter = (ITER)
-    iter = type(iter).__aiter__(iter)
+    iter = await type(iter).__aiter__(iter)
     while True:
         try:
             TARGET = await type(iter).__anext__(iter)
