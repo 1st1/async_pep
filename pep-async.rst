@@ -319,7 +319,7 @@ which would be equivalent to the following code::
     while True:
         try:
             row = await i.__anext__()
-        except StopIteration:
+        except StopAsyncIteration:
             break
         else:
             print(row)
