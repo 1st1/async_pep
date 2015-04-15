@@ -232,13 +232,13 @@ and
 
 ::
 
-    def a1():
+    async def a1():
         await fut
         raise StopIteration('spam')
 
 ::
 
-    def a2():
+    async def a2():
         await fut
         return 'spam'
 
