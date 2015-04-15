@@ -101,18 +101,17 @@ Await expression is almost a direct equivalent of ``yield from``::
         data = await db.fetch('SELECT ...')
         ...
 
-It will share most of the ``yield from`` implementation with an extra step of
+It will use the ``yield from`` implementation with an extra quick step of
 validating its argument.  It will only accept:
 
 * ``async`` functions;
 
 * generators with ``CO_ASYNC`` in their ``gi_code.co_flags``;
 
-* objects with its ``__iter__`` method tagged with ``__async__ = True``
-  attribute.  This is to enable backwards compatibility and to enable use of
-  bare ``yield`` statements to suspend code execution in a chain of ``await``
-  calls.  We will call such objects as **Future-like** objects in the rest of
-  this PEP.
+* objects with their ``__iter__`` method tagged with ``__async__ = True``
+  attribute.  This is to enable backwards compatibility and use of bare
+  ``yield`` statements to suspend code execution in a chain of ``await`` calls.
+  We will call such objects as **Future-like** objects in the rest of this PEP.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
