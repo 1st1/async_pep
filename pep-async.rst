@@ -211,8 +211,8 @@ possible to create asynchronous iterators by creating a generator with both
 Why StopAsyncIteration?
 +++++++++++++++++++++++
 
-Async functions are still generators.  So for python, there is no fundamental
-difference between
+Async functions are still generators.  So for python, there is no
+**fundamental** difference between
 
 ::
 
