@@ -264,14 +264,6 @@ As for with regular ``for`` statement, ``async for`` will have an optional
 ``else`` clause.
 
 
-anext() and aiter()
-+++++++++++++++++++
-
-The existing built-ins ``next()`` and ``iter()`` will not work with asynchronous
-iterators.  A pair of new built-in functions ``anext()`` and ``aiter()`` will
-be added.
-
-
 Comprehensions
 ++++++++++++++
 
