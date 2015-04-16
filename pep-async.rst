@@ -627,12 +627,12 @@ example run (note that depth of 19 means 1,048,575 calls):
 
 ::
 
-    abinary(19) * 30: total 13.156
-    binary(19) * 30: total 13.081
-    abinary(19) * 30: total 12.984
-    binary(19) * 30: total 13.183
-    abinary(19) * 30: total 12.985
-    binary(19) * 30: total 12.953
+    abinary(19) * 30: total 13.156s
+    binary(19) * 30: total 13.081s
+    abinary(19) * 30: total 12.984s
+    binary(19) * 30: total 13.183s
+    abinary(19) * 30: total 12.985s
+    binary(19) * 30: total 12.953s
 
 
 Reference Implementation
