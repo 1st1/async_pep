@@ -564,7 +564,8 @@ async/await is not a new concept in programming languages:
 
 * C# has it since long time ago [6]_;
 
-* Proposal to add async/await in ECMAScript 7 [3]_;
+* proposal to add async/await in ECMAScript 7 [3]_;
+  see also Traceur project [10]_;
 
 * Facebook's Hack/HHVM [7]_;
 
@@ -573,6 +574,10 @@ async/await is not a new concept in programming languages:
 * Scala [9]_;
 
 * And many other less popular languages.
+
+This is a huge benefit, as some users already have experience with async/await,
+and because it makes working with many languages in one project easier (Python
+with ECMAScript 7 / Dart).
 
 
 Why "__aiter__" is async
@@ -796,3 +801,5 @@ References
 .. [8] https://www.dartlang.org/articles/await-async/
 
 .. [9] http://docs.scala-lang.org/sips/pending/async.html
+
+.. [10] https://github.com/google/traceur-compiler/wiki/LanguageFeatures#async-functions-experimental
