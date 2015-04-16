@@ -447,7 +447,9 @@ Deprecation Plans
 -----------------
 
 ``async`` and ``await`` names will be softly deprecated in CPython 3.5 and 3.6,
-and in 3.7 we may consider transforming them to proper keywords.
+and in 3.7 we may consider transforming them to proper keywords.  Making them
+proper keywords before 3.7 might make it harder for people to port their code
+to Python 3.
 
 
 types.asyncdef()
