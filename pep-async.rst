@@ -256,18 +256,23 @@ We propose a new statement for iterating through asynchronous iterators::
 
     async for TARGET in ITER:
         BLOCK
+    else:
+        BLOCK2
 
 which is roughly equivalent to::
 
     iter = (ITER)
     iter = await type(iter).__aiter__(iter)
-    while True:
+    running = True
+    while running:
         try:
             TARGET = await type(iter).__anext__(iter)
         except StopAsyncIteration:
-            break
-
-        BLOCK
+            running = False
+        else:
+            BLOCK
+    else:
+        BLOCK2
 
 
 As for with regular ``for`` statement, ``async for`` will have an optional
