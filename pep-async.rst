@@ -678,6 +678,24 @@ Reference Implementation
 
 The reference implementation can be found here: [4]_.
 
+List of high-level changes
+--------------------------
+
+1. New syntax for defining async functions: ``async def``;
+
+2. New syntax for async context managers: ``async with`` (and associated
+   protocol);
+
+3. New syntax for async iteration: ``async for`` (and associated protocol);
+
+4. New AST nodes: ``AsyncFor``, ``AsyncWith``, ``Await``;
+
+5. ``FunctionDef`` got a new argument ``is_async``;
+
+6. New ``sys.set_async_wrapper`` function;
+
+7. New ``types.async_def`` function.
+
 
 References
 ==========
