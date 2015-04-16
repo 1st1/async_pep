@@ -425,7 +425,7 @@ List of functions and methods
 =============================
 
 ================= =======================================  =================
-Method            Cam contain                              Can't contain
+Method            Can contain                              Can't contain
 ================= =======================================  =================
 async def func    await, return value                      yield, yield from
 async def __a*__  await, return value                      yield, yield from
