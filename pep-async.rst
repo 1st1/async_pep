@@ -106,17 +106,25 @@ validating its argument.  It will only accept:
   ``types.async_def()`` later in this PEP).  This is to make all existing
   coroutines in asyncio compatible with the new proposal.
 
-* objects with their ``__iter__`` method tagged with ``__async__ = True``
-  attribute.
+* objects with an ``__await__`` method that returns an iterator.
 
-  This is to enable Futures - objects with an ``__iter__`` method that uses bare
-  ``yield`` statement to suspend the execution of the current coroutines chain
-  (please refer to PEP 3156 for detailed explanation).  Such objects will be
-  called **Future-like** objects in the rest of this PEP.
+  Any ``yield from`` in asyncio ends up at some ``yield``.  This is a
+  fundamental mechanism of how Futures must be implemented.  Since async
+  functions are special kind of generators, every ``await`` will be suspended by
+  a ``yield`` somewhere down the chain of ``await`` calls (please refer to PEP
+  3156 for detailed explanation.)
 
-  Please note that ``__aiter__`` method (see its definition below) cannot be
-  used for this purpose.  It would be like using ``__iter__`` instead of
-  ``__call__`` for regular callables.
+  To enable this behavior for async functions, a new magic method called
+  ``__await__`` will be added.  For asyncio, for instance, to enable Future
+  objects in ``await`` statements, the only change is to add ``__await__ =
+  __iter__`` line to the Future class.
+
+  Objects with ``__await__`` method will be called **Future-like** objects in
+  the rest of this PEP.
+
+  Also, please note that ``__aiter__`` method (see its definition below) cannot
+  be used for this purpose.  It is a different protocol, and would be like using
+  ``__iter__`` instead of ``__call__`` for regular callables.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
@@ -533,7 +541,7 @@ The required changes are mainly:
 1. Modify ``@asyncio.coroutine`` decorator to use new ``types.async_def()``
    function on all wrapped generators.
 
-2. Add ``__async__ = True`` attribute to ``asyncio.Future.__iter__`` method.
+2. Add ``__await__ = __iter__`` line to ``asyncio.Future`` class.
 
 
 Design Considerations
@@ -767,14 +775,16 @@ List of high-level changes
 1. New syntax for defining async functions: ``async def`` and new ``await``
    keyword.
 
-2. New syntax for async context managers: ``async with``.  And associated
+2. New ``__await__`` method for Future-like objects.
+
+3. New syntax for async context managers: ``async with``.  And associated
    protocol with ``__aenter__`` and ``__aexit__`` methods.
 
-3. New syntax for async iteration: ``async for``.  And associated protocol
+4. New syntax for async iteration: ``async for``.  And associated protocol
    with ``__aiter__``, ``__aexit__`` and new built-in exception
    ``StopAsyncIteration``.
 
-4. New AST nodes: ``AsyncFor``, ``AsyncWith``, ``Await``; ``FunctionDef`` AST
+5. New AST nodes: ``AsyncFor``, ``AsyncWith``, ``Await``; ``FunctionDef`` AST
    node got a new argument ``is_async``.
 
 6. New functions: ``sys.set_async_wrapper(callback)`` and
