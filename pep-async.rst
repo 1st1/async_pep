@@ -98,8 +98,8 @@ validating its argument.  It will only accept:
   ``yield`` statements to suspend code execution in a chain of ``await`` calls.
   Such objects will be called **Future-like** objects in the rest of this PEP.
 
-  Please not the ``__aiter__`` (see its definition below) can't be used for this
-  purpose. That method is for a completely different protocol.
+  Please note the ``__aiter__`` (see its definition below) can't be used for
+  this purpose. That method is for a completely different protocol.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
