@@ -53,6 +53,10 @@ Specification
 The proposed syntax enhancements are not tailored to any specific library.  Any
 framework that uses a concept of coroutines can benefit from this proposal.
 
+It is required that the reader clearly understands how ``yield`` and ``yield
+from`` work (PEP 380).  It is also recommended to read PEP 3156 (asyncio
+framework.)
+
 
 New Coroutines Declaration Syntax
 ---------------------------------
@@ -90,12 +94,16 @@ Await expression is almost a direct equivalent of ``yield from``::
         data = await db.fetch('SELECT ...')
         ...
 
+``await`` suspends the ``read_data`` function until ``db.fetch`` async function
+or future-like object completes and returns the result data.
+
 It will use the ``yield from`` implementation with an extra quick step of
 validating its argument.  It will only accept:
 
 * ``async`` functions;
 
-* generators with ``CO_ASYNC`` in their ``gi_code.co_flags``;
+* generators with ``CO_ASYNC`` in their ``gi_code.co_flags`` (see
+  ``types.async_def()`` later in this PEP);
 
 * objects with their ``__iter__`` method tagged with ``__async__ = True``
   attribute.  This is to enable backwards compatibility and use of bare
@@ -103,7 +111,8 @@ validating its argument.  It will only accept:
   Such objects will be called **Future-like** objects in the rest of this PEP.
 
   Please note that ``__aiter__`` method (see its definition below) cannot be
-  used for this purpose. That method is for a completely different protocol.
+  used for this purpose.  It would be like using ``__iter__`` instead of
+  ``__call__`` for regular callables.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
@@ -201,7 +210,7 @@ possible to create asynchronous iterators by creating a generator with both
 Why StopAsyncIteration?
 +++++++++++++++++++++++
 
-Async functions are still generators.  So for python, there is no
+Async functions are still generators.  So before PEP 479, there was no
 **fundamental** difference between
 
 ::
@@ -218,19 +227,15 @@ and
         yield from fut
         raise StopIteration('spam')
 
-and
+And since PEP 479 is accepted and enabled by default for async functions, the
+following example will have its ``StopIteration`` wrapped into a
+``RuntimeError``
 
 ::
 
     async def a1():
         await fut
         raise StopIteration('spam')
-
-::
-
-    async def a2():
-        await fut
-        return 'spam'
 
 The only way to tell the outside code that the iteration has ended is to raise
 something other than ``StopIteration``.  Therefore, a new built-in exception
@@ -277,8 +282,8 @@ For the sake of restricting the broadness of this PEP there is no new syntax
 for asynchronous comprehensions.  This should be considered in a separate PEP.
 
 
-Example
-+++++++
+Example 1
++++++++++
 
 With asynchronous iteration protocol it will be possible to asynchronously
 buffer data during the iteration::
@@ -295,19 +300,15 @@ The following code illustrates new asynchronous iteration protocol::
         def __init__(self):
             self.buffer = collections.deque()
 
-        def fill_buffer(self):
+        def _prefetch(self):
             ...
-
-        def __iter__(self):
-            # You can't iterate with bare 'for in'
-            raise NotImplementedError
 
         async def __aiter__(self):
             return self
 
         async def __anext__(self):
             if not self.buffer:
-                self.buffer = await self.fill_buffer()
+                self.buffer = await self._prefetch()
                 if not self.buffer:
                     raise StopAsyncIteration
             return self.buffer.popleft()
@@ -327,6 +328,32 @@ which would be equivalent to the following code::
             break
         else:
             print(row)
+
+
+Example 2
++++++++++
+
+The following is a utility class that transforms a regular iterator to
+asynchronous one::
+
+    class AsyncIteratorWrapper:
+        def __init__(self, obj):
+            self._it = iter(obj)
+
+        async def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            try:
+                value = next(self._it)
+            except StopIteration:
+                raise StopAsyncIteration
+            return value
+
+    data = "abc"
+    it = AsyncIteratorWrapper("abc")
+    async for item in it:
+        print(it)
 
 
 Debugging Features
@@ -364,7 +391,7 @@ there are no debug features enabled by default.
 Example::
 
     async def debug_me():
-        ...
+        await asyncio.sleep(1)
 
     def async_debug_wrap(generator):
         return asyncio.AsyncDebugWrapper(generator)
@@ -376,7 +403,7 @@ Example::
 
     assert isinstance(debug_me(), AsyncDebugWrapper)
 
-    sys.set_async_wrapper(None)   # <- this removes any previously set wrapper
+    sys.set_async_wrapper(None)   # <- this unsets any previously set wrapper
     assert not isinstance(debug_me(), AsyncDebugWrapper)
 
 
@@ -711,20 +738,23 @@ The reference implementation can be found here: [4]_.
 List of high-level changes
 --------------------------
 
-1. New syntax for defining async functions: ``async def``;
+1. New syntax for defining async functions: ``async def`` and new ``await``
+   keyword.
 
-2. New syntax for async context managers: ``async with`` (and associated
-   protocol);
+2. New syntax for async context managers: ``async with``.  And associated
+   protocol with ``__aenter__`` and ``__aexit__`` methods.
 
-3. New syntax for async iteration: ``async for`` (and associated protocol);
+3. New syntax for async iteration: ``async for``.  And associated protocol
+   with ``__aiter__``, ``__aexit__`` and new built-in exception
+   ``StopAsyncIteration``.
 
-4. New AST nodes: ``AsyncFor``, ``AsyncWith``, ``Await``;
+4. New AST nodes: ``AsyncFor``, ``AsyncWith``, ``Await``; ``FunctionDef`` AST
+   node got a new argument ``is_async``.
 
-5. ``FunctionDef`` AST node got a new argument ``is_async``;
+6. New functions: ``sys.set_async_wrapper(callback)`` and
+   ``types.async_def(gen)`` function.
 
-6. New ``sys.set_async_wrapper`` function;
-
-7. New ``types.async_def`` function.
+7. New ``CO_ASYNC`` bit flag for code objects.
 
 
 References
