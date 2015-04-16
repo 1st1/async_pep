@@ -792,6 +792,11 @@ List of high-level changes
 
 7. New ``CO_ASYNC`` bit flag for code objects.
 
+While the list of changes and new things is not short, it is important to
+understand, that most users will not use these features directly.  It is
+intended to be used in frameworks and libraries to provide users with convenient
+to use and unambiguous APIs.
+
 
 References
 ==========
