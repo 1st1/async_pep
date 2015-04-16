@@ -416,8 +416,8 @@ Transition Period Shortcomings
 There is just one.
 
 Until ``async`` and ``await`` are not proper keywords, it is not possible (or at
-least very hard) to fix ``tokenizer.c`` to recognize them on **same line** with
-``def`` keyword::
+least very hard) to fix ``tokenizer.c`` to recognize them on the **same line**
+with ``def`` keyword::
 
     # async and await will always be parsed as variables
 
