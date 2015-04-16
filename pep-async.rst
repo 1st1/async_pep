@@ -421,6 +421,37 @@ Example::
     assert not isinstance(debug_me(), AsyncDebugWrapper)
 
 
+List of functions and methods
+=============================
+
+================= =======================================  =================
+Method            Cam contain                              Can't contain
+================= =======================================  =================
+async def func    await, return value                      yield, yield from
+async def __a*__  await, return value                      yield, yield from
+def __a*__        return Future-like                       await
+def __await__     yield, yield from, return iterable       await
+generator         yield, yield from, return                await
+================= =======================================  =================
+
+Methods:
+
+* ""async def func": async function;
+
+* "async def __a*__": ``__aiter__``, ``__anext__``, ``__aenter__``,
+  ``__aexit__`` defined with the async keyword;
+
+* "def __a*__": ``__aiter__``, ``__anext__``, ``__aenter__``, ``__aexit__``
+  defined without the async keyword, must return a Future-like object;
+
+* "def __await__": ``__await__`` method to implement Future-like objects;
+
+* generator: a "regular" generator, function defined with ``def`` and which
+  contains a least one ``yield`` or ``yield from`` expression.
+
+**Future-like** is an object with an ``__await__`` method.
+
+
 Transition Plan
 ===============
 
