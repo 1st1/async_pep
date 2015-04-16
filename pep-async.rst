@@ -453,7 +453,7 @@ Backwards Compatibility
 The only backwards incompatible change is an extra argument ``is_async`` to
 ``FunctionDef`` AST node.  But since it is a documented fact that the structure
 of AST nodes is an implementation detail and subject to change, this should not
-be considered as a serious issue.
+be considered a serious issue.
 
 
 Grammar Updates
