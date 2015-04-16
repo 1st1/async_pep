@@ -617,7 +617,7 @@ Overall Impact
 --------------
 
 This proposal introduces no observable performance impact.  Here is an output
-of python's official set of benchmarks [5]_::
+of python's official set of benchmarks [5]_:
 
 ::
 
