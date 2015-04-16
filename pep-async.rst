@@ -100,15 +100,19 @@ or future-like object completes and returns the result data.
 It will use the ``yield from`` implementation with an extra quick step of
 validating its argument.  It will only accept:
 
-* ``async`` functions;
+* ``async def`` functions.
 
 * generators with ``CO_ASYNC`` in their ``gi_code.co_flags`` (see
-  ``types.async_def()`` later in this PEP);
+  ``types.async_def()`` later in this PEP).  This is to make all existing
+  coroutines in asyncio compatible with the new proposal.
 
 * objects with their ``__iter__`` method tagged with ``__async__ = True``
-  attribute.  This is to enable backwards compatibility and use of bare
-  ``yield`` statements to suspend code execution in a chain of ``await`` calls.
-  Such objects will be called **Future-like** objects in the rest of this PEP.
+  attribute.
+
+  This is to enable Futures - objects with an ``__iter__`` method that uses bare
+  ``yield`` statement to suspend the execution of the current coroutines chain
+  (please refer to PEP 3156 for detailed explanation).  Such objects will be
+  called **Future-like** objects in the rest of this PEP.
 
   Please note that ``__aiter__`` method (see its definition below) cannot be
   used for this purpose.  It would be like using ``__iter__`` instead of
