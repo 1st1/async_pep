@@ -557,6 +557,24 @@ functions in a Future object, but this has the following disadvantages:
 2. A new built-in ``Future`` object would need to be added.
 
 
+Why "async" and "await" keywords
+--------------------------------
+
+async/await is not a new concept in programming languages:
+
+* C# has it since long time ago [6]_;
+
+* Proposal to add async/await in ECMAScript 7 [3]_;
+
+* Facebook's Hack/HHVM [7]_;
+
+* Google's Dart language [8]_;
+
+* Scala [9]_;
+
+* And many other less popular languages.
+
+
 Why "__aiter__" is async
 ------------------------
 
@@ -591,9 +609,6 @@ If ``useful()`` method is refactored and someone removes all ``await``
 expressions from it, it would become a regular python function, and all code
 that depends on it, including ``important()`` will be broken.  To mitigate this
 issue a decorator similar to ``@asyncio.coroutine`` has to be introduced.
-
-Also, async/await is not a new concept in programming languages.  C# has had
-it for years, and there are proposals to add them in JavaScript and C++.
 
 
 Why "async def"
@@ -773,3 +788,11 @@ References
 .. [4] https://github.com/1st1/cpython/tree/await
 
 .. [5] https://hg.python.org/benchmarks
+
+.. [6] https://msdn.microsoft.com/en-us/library/hh191443.aspx
+
+.. [7] http://docs.hhvm.com/manual/en/hack.async.php
+
+.. [8] https://www.dartlang.org/articles/await-async/
+
+.. [9] http://docs.scala-lang.org/sips/pending/async.html
