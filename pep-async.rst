@@ -795,7 +795,8 @@ List of high-level changes
 While the list of changes and new things is not short, it is important to
 understand, that most users will not use these features directly.  It is
 intended to be used in frameworks and libraries to provide users with convenient
-to use and unambiguous APIs.
+to use and unambiguous APIs with ``async def``, ``await``, ``async for`` and
+``async with`` syntax.
 
 
 References
