@@ -77,7 +77,8 @@ Some key properties of async functions:
 
 * A new bit flag ``CO_ASYNC`` for code object's ``co_flag`` field will be
   introduced to allow runtime detection of async functions (and migrating
-  existing code).
+  existing code).  All async functions have both ``CO_ASYNC`` and
+  ``CO_GENERATOR`` bits set.
 
 * ``StopIteration`` exceptions will not be propagated out of async functions;
   instead they will be wrapped in a ``RuntimeError``.  For regular generators
