@@ -567,6 +567,28 @@ to align new magic methods with the existing ones, such as ``__radd__`` and
 ``__iadd__`` it was decided to use a shorter version.
 
 
+Why not reuse existing magic names
+----------------------------------
+
+An alternative idea about new async iterators and context managers was to re-use
+existing magic methods, by adding an ``async`` keyword to their declarations::
+
+    class CM:
+        async def __enter__(self): # instead of __aenter__
+            ...
+
+This approach has the following downsides:
+
+* it is not possible to create an object that works in both ``with`` and
+  ``async with`` statements;
+
+* it looks confusing and would require some implicit magic behind the scenes in
+  the interpreter;
+
+* one of the main points of this proposal is to make async functions as simple
+  and fool-proofed as possible.
+
+
 Reference Implementation
 ========================
 
