@@ -412,15 +412,16 @@ Transition Period Shortcomings
 There is just one.
 
 Until ``async`` and ``await`` are not proper keywords, it is not possible (or at
-least very hard) to fix ``tokenizer.c`` to recognize them in function
-annotations.  One line ``async def`` with an ``await`` expression is not
-possible either::
+least very hard) to fix ``tokenizer.c`` to recognize them on **same line** with
+``def`` keyword::
 
     # async and await will always be parsed as variables
-    async def foo(a=(await fut)): pass
-    async def foo(a:(await fut)): pass
-    async def foo() -> (await fut): pass
-    async def foo(): return (await fut)
+
+    async def outer():                             # 1
+        def nested(a=(await fut)):
+            pass
+
+    async def foo(): return (await fut)            # 2
 
 Since ``await`` and ``async`` in such cases are parsed as ``NAME`` tokens, a
 ``SyntaxError`` will be raised.
@@ -428,13 +429,12 @@ Since ``await`` and ``async`` in such cases are parsed as ``NAME`` tokens, a
 The above examples, however, are hard to parse for humans too, and can be easily
 rewritten to a more readable form::
 
-    # async and await will always be parsed as variables
-    a_default = await fut
-    async def foo(a=a_default): pass
+    async def outer():                             # 1
+        a_default = await fut
+        def nested(a=a_default):
+            pass
 
-    # etc
-
-    async def foo():
+    async def foo():                               # 2
         return (await fut)
 
 
