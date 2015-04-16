@@ -85,11 +85,10 @@ a small fraction of asyncio users knows about it::
     # later in the code:
     read() # this line raises a ResourceWarning with a pointer to this line
 
-``StopIteration`` exceptions will not be propagated out of async functions. This
-feature can be enabled for regular generators in CPython 3.5 with a special
-future import statement (see PEP 479).  Since the new syntax will not require
-future imports nor it was possible to have async functions before 3.5, it is
-safe to enable this feature by default for all async functions.
+``StopIteration`` exceptions will not be propagated out of async functions;
+instead they will be wrapped in a ``RuntimeError``.  For regular generators
+such behavior requires a future import (see PEP 479), but since async functions
+is a new concept, it is safe to have this feature enabled for them by default.
 
 
 Await Expression
