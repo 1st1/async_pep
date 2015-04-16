@@ -62,19 +62,23 @@ Use ``async`` and ``def`` keywords to declare a coroutine::
     async def read_data(db):
         ...
 
-Coroutines are always generators, even if they do not contain ``await``
-expressions.
+Some key properties of async functions:
 
-It's a syntax error to have ``yield`` or ``yield from`` expressions in ``async``
-function.
+* Async methods are always generators, even if they do not contain ``await``
+  expressions.
 
-A new bit flag ``CO_ASYNC`` for ``co_flag`` field of code objects will be
-introduced to allow runtime detection of coroutine objects.
+* It is a syntax error to have ``yield`` or ``yield from`` expressions in
+  ``async`` function.
 
-``StopIteration`` exceptions will not be propagated out of async functions;
-instead they will be wrapped in a ``RuntimeError``.  For regular generators
-such behavior requires a future import (see PEP 479), but since async functions
-is a new concept, it is safe to have this feature enabled for them by default.
+* A new bit flag ``CO_ASYNC`` for code object's ``co_flag`` field will be
+  introduced to allow runtime detection of coroutine objects (and migrating
+  existing code).
+
+* ``StopIteration`` exceptions will not be propagated out of async functions;
+  instead they will be wrapped in a ``RuntimeError``.  For regular generators
+  such behavior requires a future import (see PEP 479), but since async
+  functions is a new concept, it is safe to have this feature enabled for them
+  by default.
 
 
 Await Expression
