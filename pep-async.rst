@@ -573,6 +573,8 @@ async/await is not a new concept in programming languages:
 
 * Scala [9]_;
 
+* proposal to add async/await to C++ [11]_;
+
 * And many other less popular languages.
 
 This is a huge benefit, as some users already have experience with async/await,
@@ -803,3 +805,5 @@ References
 .. [9] http://docs.scala-lang.org/sips/pending/async.html
 
 .. [10] https://github.com/google/traceur-compiler/wiki/LanguageFeatures#async-functions-experimental
+
+.. [11] http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3722.pdf (PDF)
