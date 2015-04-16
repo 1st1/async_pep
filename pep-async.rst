@@ -616,9 +616,30 @@ Performance
 Overall Impact
 --------------
 
-This proposal introduces no observable performance impact.
+This proposal introduces no observable performance impact.  Here is an output
+of python's official set of benchmarks [5]_::
 
-TODO: add benchmark results.
+::
+
+    python3 perf.py -r -b default ../cpython/python.exe ../cpython-git/python.exe
+
+    [skipped]
+
+    Report on Darwin ysmac 14.3.0 Darwin Kernel Version 14.3.0:
+    Mon Mar 23 11:59:05 PDT 2015; root:xnu-2782.20.48~5/RELEASE_X86_64
+    x86_64 i386
+
+    Total CPU cores: 8
+
+    ### etree_iterparse ###
+    Min: 0.365359 -> 0.349168: 1.05x faster
+    Avg: 0.396924 -> 0.379735: 1.05x faster
+    Significant (t=9.71)
+    Stddev: 0.01225 -> 0.01277: 1.0423x larger
+
+    The following not significant results are hidden, use -v to show them:
+    django_v2, 2to3, etree_generate, etree_parse, etree_process, fastpickle,
+    fastunpickle, json_dump_v2, json_load, nbody, regex_v8, tornado_http.
 
 
 Tokenizer modifications
@@ -632,7 +653,7 @@ times) takes the same amount of time.
 async/await
 -----------
 
-We used the following simple micro-benchmark to determine performance difference
+The following micro-benchmark was used to determine performance difference
 between "async" functions and generators::
 
     import sys
@@ -690,7 +711,7 @@ List of high-level changes
 
 4. New AST nodes: ``AsyncFor``, ``AsyncWith``, ``Await``;
 
-5. ``FunctionDef`` got a new argument ``is_async``;
+5. ``FunctionDef`` AST node got a new argument ``is_async``;
 
 6. New ``sys.set_async_wrapper`` function;
 
@@ -707,3 +728,5 @@ References
 .. [3] http://wiki.ecmascript.org/doku.php?id=strawman:async_functions
 
 .. [4] https://github.com/1st1/cpython/tree/await
+
+.. [5] https://hg.python.org/benchmarks
