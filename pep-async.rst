@@ -452,10 +452,10 @@ proper keywords before 3.7 might make it harder for people to port their code
 to Python 3.
 
 
-types.asyncdef()
+types.async_def()
 ----------------
 
-A new function will be added to the ``types`` module: ``asyncdef(gen)``.  It
+A new function will be added to the ``types`` module: ``async_def(gen)``.  It
 will apply ``CO_ASYNC`` bit to the passed generator's code object, so that it
 can be awaited on in async functions.  This is to enable an easy upgrade path
 for existing libraries.
@@ -469,7 +469,7 @@ new statements.  Backwards compatibility will be 100% preserved.
 
 The required changes are mainly:
 
-1. Modify ``@asyncio.coroutine`` decorator to use new ``types.asyncdef()``
+1. Modify ``@asyncio.coroutine`` decorator to use new ``types.async_def()``
    function on all wrapped generators.
 
 2. Add ``__async__ = True`` attribute to ``asyncio.Future.__iter__`` method.
