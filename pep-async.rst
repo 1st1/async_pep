@@ -37,9 +37,9 @@ trampolines, adding to the confusion.
 
 This proposal makes coroutines a first class construct in Python to clearly
 separate them from generators.  This allows unambiguous usage of generators and
-coroutines close to each other, as well as helps to avoid intermixing them by
-mistake.  It also enables linters and IDEs to improve code static analysis and
-refactoring.
+coroutines in the same source file, as well as helps to avoid calling generators
+from coroutines and vice-versa.  It also enables linters and IDEs to improve
+static code analysis and refactoring.
 
 Introducing the ``async`` keyword enables creation of asynchronous context
 manager and iteration protocols.  The former lets Python perform non-blocking
