@@ -352,6 +352,9 @@ With this proposal, async functions is a native, distinct from generators,
 concept.  A new method ``set_async_wrapper`` will be added to the ``sys``
 module, with which frameworks can provide advanced debugging facilities.
 
+It is also important to make async functions as fast as possible, therefore
+there are no debug features enabled by default.
+
 Example::
 
     async def debug_me():
