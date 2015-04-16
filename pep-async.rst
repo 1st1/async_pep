@@ -588,6 +588,53 @@ This approach has the following downsides:
   and fool-proofed as possible.
 
 
+Performance
+===========
+
+async/await
+-----------
+
+We used the following simple micro-benchmark to determine performance difference
+between "async" functions and generators::
+
+    import sys
+    import time
+
+    def binary(n):
+        if n <= 0:
+            return 1
+        l = yield from binary(n - 1)
+        r = yield from binary(n - 1)
+        return l + 1 + r
+
+    async def abinary(n):
+        if n <= 0:
+            return 1
+        l = await abinary(n - 1)
+        r = await abinary(n - 1)
+        return l + 1 + r
+
+    def timeit(gen, depth, repeat):
+        t0 = time.time()
+        for _ in range(repeat):
+            list(gen(depth))
+        t1 = time.time()
+        print('{}({}) * {}: total {:.3f}s'.format(
+            gen.__name__, depth, repeat, t1-t0))
+
+The result is that there is no observable performance difference.  Here's an
+example run (note that depth of 19 means 1,048,575 calls):
+
+::
+
+    abinary(19) * 30: total 13.156
+    binary(19) * 30: total 13.081
+    abinary(19) * 30: total 12.984
+    binary(19) * 30: total 13.183
+    abinary(19) * 30: total 12.985
+    binary(19) * 30: total 12.953
+
+
 Reference Implementation
 ========================
 
