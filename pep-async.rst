@@ -69,14 +69,14 @@ Use ``async`` and ``def`` keywords to declare a coroutine::
 
 Some key properties of async functions:
 
-* Async methods are always generators, even if they do not contain ``await``
+* Async functions are always generators, even if they do not contain ``await``
   expressions.
 
 * It is a syntax error to have ``yield`` or ``yield from`` expressions in
   ``async`` function.
 
 * A new bit flag ``CO_ASYNC`` for code object's ``co_flag`` field will be
-  introduced to allow runtime detection of coroutine objects (and migrating
+  introduced to allow runtime detection of async functions (and migrating
   existing code).
 
 * ``StopIteration`` exceptions will not be propagated out of async functions;
@@ -215,7 +215,7 @@ method, which must in turn return an object with ``__anext__`` asynchronous
 method. ``__anext__`` must raise a ``StopAsyncIteration`` exception when the
 iteration is over.
 
-Since it is prohibited to have ``yield`` inside async methods, it's not
+Since it is prohibited to have ``yield`` inside async functions, it's not
 possible to create asynchronous iterators by creating a generator with both
 ``await`` and ``yield`` expressions.
 
@@ -621,7 +621,7 @@ Let's pretend that Python only has ``await`` keyword::
     def important():
         await useful()
 
-If ``useful()`` method is refactored and someone removes all ``await``
+If ``useful()`` function is refactored and someone removes all ``await``
 expressions from it, it would become a regular python function, and all code
 that depends on it, including ``important()`` will be broken.  To mitigate this
 issue a decorator similar to ``@asyncio.coroutine`` has to be introduced.
