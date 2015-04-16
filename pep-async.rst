@@ -31,8 +31,9 @@ recommends using the ``@asyncio.coroutine`` decorator to state intent
 (documentation) and ease debugging (developer efficiency).  This approach
 requires users to understand generators, most importantly the difference between
 ``yield`` and ``yield from``. Existing Python 2-compatible third-party
-frameworks, including the ``asyncio`` backport trollius [2]_, implement
-coroutines using ``yield`` and trampolines, adding to the confusion.
+frameworks, such as Twisted [12]_, Tornado [13]_, and many others, including the
+``asyncio`` backport trollius [2]_, implement coroutines using ``yield`` and
+trampolines, adding to the confusion.
 
 This proposal makes coroutines a first class construct in Python to clearly
 separate them from generators.  This allows unambiguous usage of generators and
@@ -823,3 +824,7 @@ References
 .. [10] https://github.com/google/traceur-compiler/wiki/LanguageFeatures#async-functions-experimental
 
 .. [11] http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3722.pdf (PDF)
+
+.. [12] https://twistedmatrix.com/trac/
+
+.. [13] http://www.tornadoweb.org/en/stable/
