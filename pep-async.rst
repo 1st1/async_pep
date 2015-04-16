@@ -96,7 +96,10 @@ validating its argument.  It will only accept:
 * objects with their ``__iter__`` method tagged with ``__async__ = True``
   attribute.  This is to enable backwards compatibility and use of bare
   ``yield`` statements to suspend code execution in a chain of ``await`` calls.
-  We will call such objects as **Future-like** objects in the rest of this PEP.
+  Such objects will be called **Future-like** objects in the rest of this PEP.
+
+  Please not the ``__aiter__`` (see its definition below) can't be used for this
+  purpose. That method is for a completely different protocol.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
@@ -107,16 +110,15 @@ Asynchronous Context Managers and "async with"
 An asynchronous Context Manager will be able to suspend execution in its
 **enter** and **exit** methods.
 
-To make it possible we propose to add a new protocol for asynchronous context
-managers. Two new magic methods will be added: ``__aenter__`` and
-``__aexit__``.  Both must either return a **Future-like** object, or be an
-``async`` function.
+To make it possible  new protocol for asynchronous context managers is proposed.
+Two new magic methods will be added: ``__aenter__`` and ``__aexit__``.  Both
+must either return a **Future-like** object, or be an ``async`` function.
 
 
 New Syntax
 ++++++++++
 
-We propose a new statement for asynchronous context managers::
+A new statement for asynchronous context managers is proposed::
 
     async with EXPR as VAR:
         BLOCK
@@ -181,7 +183,7 @@ Asynchronous Iterators and "async for"
 --------------------------------------
 
 An asynchronous iterator will be able to call asynchronous code in its magic
-**next** implementation.  We propose a new iteration protocol: an object that
+**next** implementation.  A new iteration protocol is proposed: an object that
 supports asynchronous iteration must implement a ``__aiter__`` asynchronous
 method, which must in turn return an object with ``__anext__`` asynchronous
 method. ``__anext__`` must raise a ``StopAsyncIteration`` exception when the
@@ -237,7 +239,7 @@ in async functions will be wrapped in ``RuntimeError``.
 New Syntax
 ++++++++++
 
-We propose a new statement for iterating through asynchronous iterators::
+A new statement for iterating through asynchronous iterators is proposed::
 
     async for TARGET in ITER:
         BLOCK
