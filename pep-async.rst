@@ -71,20 +71,6 @@ function.
 A new bit flag ``CO_ASYNC`` for ``co_flag`` field of code objects will be
 introduced to allow runtime detection of coroutine objects.
 
-To make sure that asynchronous functions are always awaited on, the generator
-object's ``tp_finalize`` implementation is tweaked to raise a
-``ResourceWarning`` if the ``send`` method was never called on it (only for
-functions with ``CO_ASYNC`` bit in ``co_flag``).  This is an extremely important
-feature, since omitting a ``yield from`` is a common mistake.
-``@asyncio.coroutine`` decorator addresses the problem by wrapping generators
-with a special object in asyncio debug mode; however, we believe, that only
-a small fraction of asyncio users knows about it::
-
-    async def read():
-        ...
-    # later in the code:
-    read() # this line raises a ResourceWarning with a pointer to this line
-
 ``StopIteration`` exceptions will not be propagated out of async functions;
 instead they will be wrapped in a ``RuntimeError``.  For regular generators
 such behavior requires a future import (see PEP 479), but since async functions
@@ -345,6 +331,54 @@ which would be equivalent to the following code::
             print(row)
 
 
+Debugging Features
+------------------
+
+One of the most frequent mistakes that people make when using generators as
+coroutines is forgetting to use ``yield from``::
+
+    @asyncio.coroutine
+    def useful():
+        asyncio.sleep(1) # this will do noting without 'yield from'
+
+For debugging this kind of mistakes there is a special debug mode in asyncio,
+in which ``@coroutine`` decorator wraps all functions with a special object
+with overloaded ``__del__``.  Whenever a wrapped generator gets garbage
+collected, a detailed logging message is generated with information about where
+exactly the decorator function was defined, stack trace of where it was
+collected, etc.  Wrapper object also provides a convenient ``__repr__`` function
+with detailed information about the generator.
+
+The only problem is how to enable this debug capabilities.  Since debug
+facilities should be no-op in production mode, ``@coroutine`` decorator makes
+the decision of whether to wrap or not to wrap based on an OS environment
+variable ``PYTHONASYNCIODEBUG``.  This way it is possible to run asyncio
+programs with asyncio's own functions instrumented.  ``EventLoop.set_debug``, a
+different debug facility, has no impact on ``@coroutine`` decorator's behavior.
+
+With this proposal, async functions is a native, distinct from generators,
+concept.  A new method ``set_async_wrapper`` will be added to the ``sys``
+module, with which frameworks can provide advanced debugging facilities.
+
+Example::
+
+    async def debug_me():
+        ...
+
+    def async_debug_wrap(generator):
+        return asyncio.AsyncDebugWrapper(generator)
+
+    sys.set_async_wrapper(async_debug_wrap)
+
+    debug_me()  # <- this line will likely GC the decorator object and
+                # trigger AsyncDebugWrapper's code.
+
+    assert isinstance(debug_me(), AsyncDebugWrapper)
+
+    sys.set_async_wrapper(None)   # <- this removes any previously set wrapper
+    assert not isinstance(debug_me(), AsyncDebugWrapper)
+
+
 Transition Plan
 ===============
 
@@ -370,10 +404,6 @@ An example of having "async def" and "async" attribute in one piece of code::
         print(getattr(Spam, 'async'))
 
     # The coroutine can be executed and will print '42'
-
-There is no observable slowdown of parsing python files with the modified
-tokenizer: parsing of one 12Mb file (``Lib/test/test_binop.py`` repeated 1000
-times) takes the same amount of time.
 
 
 Backwards Compatibility
@@ -590,6 +620,22 @@ This approach has the following downsides:
 
 Performance
 ===========
+
+Overall Impact
+--------------
+
+This proposal introduces no observable performance impact.
+
+TODO: add benchmark results.
+
+
+Tokenizer modifications
+-----------------------
+
+There is no observable slowdown of parsing python files with the modified
+tokenizer: parsing of one 12Mb file (``Lib/test/test_binop.py`` repeated 1000
+times) takes the same amount of time.
+
 
 async/await
 -----------
