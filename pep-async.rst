@@ -838,17 +838,15 @@ between "async" functions and generators::
         print('{}({}) * {}: total {:.3f}s'.format(
             gen.__name__, depth, repeat, t1-t0))
 
-The result is that there is no observable performance difference.  Here's an
-example run (note that depth of 19 means 1,048,575 calls):
+The result is that there is no observable performance difference.  Minimum
+timing of 3 runs
 
 ::
 
-    abinary(19) * 30: total 13.156s
-    binary(19) * 30: total 13.081s
-    abinary(19) * 30: total 12.984s
-    binary(19) * 30: total 13.183s
     abinary(19) * 30: total 12.985s
     binary(19) * 30: total 12.953s
+
+Note that depth of 19 means 1,048,575 calls.
 
 
 Reference Implementation
