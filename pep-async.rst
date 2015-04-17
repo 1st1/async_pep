@@ -95,8 +95,8 @@ Key properties of coroutines:
   coroutines return a *coroutine object*.
 
 * ``StopIteration`` exceptions are not propagated out of coroutines, and are
-  wrapped in a ``RuntimeError`` instead, like in regular generators
-  (see PEP 479).
+  replaced with a ``RuntimeError``.  For regular generators such behavior
+  requires a future import (see PEP 479).
 
 
 types.async_def()
@@ -295,6 +295,10 @@ which is semantically equivalent to::
         BLOCK2
 
 
+It is an error to pass a regular iterable without ``__aiter__`` method to
+``async for``.  It is a ``SyntaxError`` to use ``async for`` outside of a
+coroutine.
+
 As for with regular ``for`` statement, ``async for`` has an optional ``else``
 clause.
 
@@ -309,7 +313,7 @@ data during iteration::
         ...
 
 Where ``cursor`` is an asynchronous iterator that prefetches ``N`` rows
-of data after every ``N`` iterations.
+of data from a database after every ``N`` iterations.
 
 The following code illustrates new asynchronous iteration protocol::
 
@@ -426,7 +430,7 @@ coroutines is forgetting to use ``yield from``::
 
 For debugging this kind of mistakes there is a special debug mode in asyncio,
 in which ``@coroutine`` decorator wraps all functions with a special object
-with overloaded ``__del__``.  Whenever a wrapped generator gets garbage
+with a destructor logging a warning.  Whenever a wrapped generator gets garbage
 collected, a detailed logging message is generated with information about where
 exactly the decorator function was defined, stack trace of where it was
 collected, etc.  Wrapper object also provides a convenient ``__repr__``
@@ -456,13 +460,16 @@ Example::
 
     sys.set_async_wrapper(async_debug_wrap)
 
-    debug_me()  # <- this line will likely GC the decorator object and
+    debug_me()  # <- this line will likely GC the coroutine object and
                 # trigger AsyncDebugWrapper's code.
 
     assert isinstance(debug_me(), AsyncDebugWrapper)
 
     sys.set_async_wrapper(None)   # <- this unsets any previously set wrapper
     assert not isinstance(debug_me(), AsyncDebugWrapper)
+
+If ``sys.set_async_wrapper()`` is called twice, the new wrapper replaces the
+previous wrapper.  ``sys.set_async_wrapper(None)`` unsets the wrapper.
 
 
 List of functions and methods
@@ -475,7 +482,7 @@ async def func    await, return value                      yield, yield from
 async def __a*__  await, return value                      yield, yield from
 def __a*__        return Future-like                       await
 def __await__     yield, yield from, return iterable       await
-generator         yield, yield from, return                await
+generator         yield, yield from, return value          await
 ================= =======================================  =================
 
 Where:
@@ -578,8 +585,8 @@ line** with ``def`` keyword::
 Since ``await`` and ``async`` in such cases are parsed as ``NAME`` tokens, a
 ``SyntaxError`` will be raised.
 
-The above examples, however, are hard to parse for humans too, and can be
-easily rewritten to a more readable form::
+To workaround these issues, the above examples can be easily rewritten to a
+more readable form::
 
     async def outer():                             # 1
         a_default = await fut
@@ -589,8 +596,8 @@ easily rewritten to a more readable form::
     async def foo():                               # 2
         return (await fut)
 
-This limitation will go away as soon as ``async`` is a proper keyword.  Or if
-it's decided to use a future import for this PEP.
+This limitation will go away as soon as ``async`` and ``await`` ate proper
+keywords.  Or if it's decided to use a future import for this PEP.
 
 
 Deprecation Plans
@@ -611,9 +618,12 @@ statements.  Backwards compatibility is 100% preserved.
 The required changes are mainly:
 
 1. Modify ``@asyncio.coroutine`` decorator to use new ``types.async_def()``
-   function on all wrapped functions.
+   function.
 
 2. Add ``__await__ = __iter__`` line to ``asyncio.Future`` class.
+
+3. Add ``ensure_task()`` as an alias for ``async()`` function. Deprecate
+   ``async()`` function.
 
 
 Design Considerations
@@ -668,14 +678,15 @@ and because it makes working with many languages in one project easier (Python
 with ECMAScript 7 for instance).
 
 
-Why "__aiter__" is async
-------------------------
+Why "__aiter__" is a coroutine
+------------------------------
 
 In principle, ``__aiter__`` could be a regular function.  There are several
-good reasons to make it ``async``:
+good reasons to make it a coroutine:
 
-* as most of the ``__a*__`` methods are ``async``, users would often make
-  a mistake defining it as ``async`` anyways;
+* as most of the ``__anext__``, ``__aenter__``, and ``__aexit__`` methods are
+  coroutines, users would often make a mistake defining it as ``async``
+  anyways;
 
 * there might be a need to run some asynchronous operations in ``__aiter__``,
   for instance to prepare DB queries or do some file operation.
@@ -714,16 +725,16 @@ other hand, it breaks the symmetry between ``async def``, ``async with`` and
 asynchronous.  It is also more consistent with the existing grammar.
 
 
-Why not a "future" import
--------------------------
+Why not a __future__ import
+---------------------------
 
-"Future" imports are inconvenient and easy to forget to add.  Also, they are
-enabled for the whole source file.  Consider that there is a big project with a
-popular module named "async.py".  With future imports it is required to either
-import it using ``__import__()`` or ``importlib.import_module()`` calls, or to
-rename the module.  The proposed approach makes it possible to continue using
-old code and modules without a hassle, while coming up with a migration plan
-for future python versions.
+``__future__`` imports are inconvenient and easy to forget to add.  Also, they
+are enabled for the whole source file.  Consider that there is a big project
+with a popular module named "async.py".  With future imports it is required to
+either import it using ``__import__()`` or ``importlib.import_module()`` calls,
+or to rename the module.  The proposed approach makes it possible to continue
+using old code and modules without a hassle, while coming up with a migration
+plan for future python versions.
 
 
 Why magic methods start with "a"
@@ -749,11 +760,11 @@ declarations::
 
 This approach has the following downsides:
 
-* it is not possible to create an object that works in both ``with`` and
+* it would not be possible to create an object that works in both ``with`` and
   ``async with`` statements;
 
-* it looks confusing and would require some implicit magic behind the scenes in
-  the interpreter;
+* it would look confusing and would require some implicit magic behind the
+  scenes in the interpreter;
 
 * one of the main points of this proposal is to make coroutines as simple
   and foolproof as possible.
@@ -873,7 +884,7 @@ List of high-level changes and new protocols
    node got a new argument ``is_async``.
 
 6. New functions: ``sys.set_async_wrapper(callback)`` and
-   ``types.async_def(gen)`` function.
+   ``types.async_def(gen)``.
 
 7. New ``CO_ASYNC`` bit flag for code objects.
 
@@ -887,8 +898,7 @@ for`` and ``async with`` syntax.
 Working example
 ---------------
 
-All concepts proposed in this PEP are implemented [3]_ and can be tested.  The
-implementation is **not** production ready!
+All concepts proposed in this PEP are implemented [3]_ and can be tested.
 
 ::
 
