@@ -472,6 +472,46 @@ If ``sys.set_async_wrapper()`` is called twice, the new wrapper replaces the
 previous wrapper.  ``sys.set_async_wrapper(None)`` unsets the wrapper.
 
 
+Glossary
+========
+
+:Coroutine:
+    A coroutine function, or just "coroutine", is declared with ``async def``.
+    It uses ``await`` and ``return value``; see `New Coroutine Declaration
+    Syntax`_ for details.
+
+:Coroutine object:
+    Returned from a coroutine function. See `Await Expression`_ for details.
+
+:Future-like object:
+    An object with an ``__await__`` method.  It is consumed by ``await`` in a
+    coroutine. A coroutine waiting for a Future-like object is suspended until
+    the Future-like object's ``__await__`` completes.  ``await`` returns the
+    result of the Future-like object.  See `Await Expression`_ for details.
+
+:Awaitable:
+    A *future-like* object or a *coroutine object*.  See `Await Expression`_
+    for details.
+
+:Generator-based coroutine:
+    Coroutines based in generator syntax.  Most common example is
+    ``@asyncio.coroutine``.
+
+:Asynchronous context manager:
+   An asynchronous context manager has ``__aenter__`` and ``__aexit__`` methods
+   and can be used with ``async with``.  See
+   `Asynchronous Context Managers and "async with"`_ for details.
+
+:Asynchronous iterable:
+    An object with an ``__aiter__`` method, which must return an *asynchronous
+    iterator* object.  Can be used with ``async for``. See
+    `Asynchronous Iterators and "async for"`_ for details.
+
+:Asynchronous iterator:
+    An asynchronous iterator has an ``__anext__`` method.See
+    `Asynchronous Iterators and "async for"`_ for details.
+
+
 List of functions and methods
 =============================
 
