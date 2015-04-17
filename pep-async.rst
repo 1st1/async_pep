@@ -31,7 +31,7 @@ This approach has a number of shortcomings:
 
 * it is easy to confuse coroutines with regular generators, since they share
   the same syntax; async libraries often attempt to alleviate this by using
-  decorators (e.g. ``@asyncio.coroutine``[1]_);
+  decorators (e.g. ``@asyncio.coroutine`` [1]_);
 
 * it is not possible to natively define a coroutine which has no ``yield``
   or  ``yield from`` statements, again requiring the use of decorators to
