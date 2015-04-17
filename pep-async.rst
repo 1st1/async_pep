@@ -16,7 +16,7 @@ Resolution:
 Abstract
 ========
 
-This PEP introduces a new syntax for coroutines, asynchronous ``with``
+This PEP introduces new syntax for coroutines, asynchronous ``with``
 statements and ``for`` loops.  The main motivation behind this proposal is to
 streamline writing and maintaining asynchronous code, as well as to simplify
 previously hard to implement code patterns.
@@ -25,121 +25,151 @@ previously hard to implement code patterns.
 Rationale and Goals
 ===================
 
-Coroutines in Python are usually implemented using generators and the ``yield
-from`` syntax.  Documentation of the asyncio [1]_ module in the standard
-library recommends using the ``@asyncio.coroutine`` decorator to state intent
-(documentation) and ease debugging (developer efficiency).  This approach
-requires users to understand generators, most importantly the difference
-between ``yield`` and ``yield from``.  Existing Python 2-compatible third-party
-frameworks, such as Twisted [12]_, Tornado [13]_, and many others, including
-the ``asyncio`` backport trollius [2]_, implement coroutines using ``yield``
-and trampolines, adding to the confusion.
+Current Python supports implementing coroutines via generators (PEP 342),
+further enhanced by the ``yield from`` syntax introduced in PEP 380.
+This approach has a number of shortcomings:
 
-This proposal makes coroutines a first class construct in Python to clearly
-separate them from generators.  This allows unambiguous usage of generators and
-coroutines in the same source file, as well as helps to avoid calling
-generators from coroutines and vice-versa.  It also enables linters and IDEs to
-improve static code analysis and refactoring.
+* it is easy to confuse coroutines with regular generators, since they share
+  the same syntax; async libraries often attempt to alleviate this by using
+  decorators (e.g. ``@asyncio.coroutine``[1]_);
 
-Introducing the ``async`` keyword enables creation of asynchronous context
-managers and iteration protocols.  The former lets Python perform non-blocking
-operations upon entering and exiting the context manager, while the latter lets
-Python perform non-blocking operations during iteration steps (in an equivalent
-of ``__next__()``).
+* it is not possible to natively define a coroutine which has no ``yield``
+  or  ``yield from`` statements, again requiring the use of decorators to
+  fix potential refactoring issues;
+
+* support for asynchronous calls is limited to expressions where ``yield`` is
+  allowed syntactically, limiting the usefulness of syntactic features, such
+  as ``with`` and ``for`` statements.
+
+This proposal makes coroutines a native Python language feature, and clearly
+separates them from generators.  This removes generator/coroutine ambiguity,
+and makes it possible to reliably define coroutines without reliance on a
+specific library.  This also enables linters and IDEs to improve static code
+analysis and refactoring.
+
+Native coroutines and the associated new syntax features make it possible
+to define context manager and iteration protocols in asynchronous terms.
+As shown later in this proposal, the new ``async with`` statement lets Python
+programs perform asynchronous calls when entering and exiting a runtime
+context, and the new ``async for`` statement makes it possible to perform
+asynchronous calls in iterators.
 
 
 Specification
 =============
 
-The proposed syntax enhancements are not tailored to any specific library.  Any
-framework that uses a concept of coroutines can benefit from this proposal.
+This proposal introduces new syntax and semantics to enhance coroutine support
+in Python, it does not change the internal implementation of coroutines, which
+are still based on generators.
 
-It is required that the reader clearly understands how ``yield`` and ``yield
-from`` work (PEP 380).  It is also recommended to read PEP 3156 (asyncio
-framework.)
+It is strongly suggested that the reader understands how coroutines are
+implemented in Python (PEP 342 and PEP 380).  It is also recommended to read
+PEP 3156 (asyncio framework).
+
+From this point in this document we use the word *coroutine* to refer to
+functions declared using the new syntax.  We use *generator-based coroutine*
+where necessary to refer to coroutines that are based on generator syntax.
 
 
-New Coroutines Declaration Syntax
----------------------------------
+New Coroutine Declaration Syntax
+--------------------------------
 
-Use ``async`` and ``def`` keywords to declare a coroutine ("async function"
-later in this PEP, to avoid confusion)::
+The following new syntax is used to declare a coroutine::
 
     async def read_data(db):
-        ...
+        pass
 
-Some key properties of async functions:
+Key properties of coroutines:
 
-* Async functions are always generators, even if they do not contain ``await``
+* Coroutines are always generators, even if they do not contain ``await``
   expressions.
 
-* It is a syntax error to have ``yield`` or ``yield from`` expressions in
-  ``async`` function.
+* It is a ``SyntaxError`` to have ``yield`` or ``yield from`` expressions in
+  an ``async`` function.
 
-* A new bit flag ``CO_ASYNC`` for code object's ``co_flag`` field is introduced
-  to allow runtime detection of async functions (and migrating existing code).
-  All async functions have both ``CO_ASYNC`` and ``CO_GENERATOR`` bits set.
+* Internally, a new code object flag - ``CO_ASYNC`` - is introduced to enable
+  runtime detection of coroutines (and migrating existing code).
+  All coroutines have both ``CO_ASYNC`` and ``CO_GENERATOR`` flags set.
 
-* ``StopIteration`` exceptions are not propagated out of async functions;
-  instead they are wrapped in a ``RuntimeError``.  For regular generators such
-  behavior requires a future import (see PEP 479), but since async functions is
-  a new concept, it is safe to have this feature enabled for them by default.
+* Regular generators, when called, return a *generator object*; similarly,
+  coroutines return a *coroutine object*.
+
+* ``StopIteration`` exceptions are not propagated out of coroutines, and are
+  wrapped in a ``RuntimeError`` instead, like in regular generators
+  (see PEP 479).
+
+
+types.async_def()
+-----------------
+
+A new function ``async_def(gen)`` is added to the ``types`` module.  It
+applies ``CO_ASYNC`` flag to the passed generator's code object, so that it
+returns a *coroutine object* when called.
+
+This feature enables an easy upgrade path for existing libraries.
 
 
 Await Expression
 ----------------
 
-Await expression is almost a direct equivalent of ``yield from``::
+The following new ``await`` expression is used to obtain a result of coroutine
+execution::
 
     async def read_data(db):
         data = await db.fetch('SELECT ...')
         ...
 
-``await`` suspends the ``read_data`` function until ``db.fetch`` async function
-or future-like object completes and returns the result data.
+``await``, similarly to ``yield from``, suspends execution of ``read_data``
+coroutine until ``db.fetch`` *awaitable* completes and returns the result
+data.
 
-It uses the ``yield from`` implementation with an extra quick step of
-validating its argument.  It only accepts:
+It uses the ``yield from`` implementation with an extra step of validating its
+argument.  ``await`` only accepts an *awaitable*, which can be one of:
 
-* ``async def`` functions.
+* A *coroutine object* returned from a coroutine or a generator decorated with
+  ``types.async_def()``.
 
-* generators with ``CO_ASYNC`` in their ``gi_code.co_flags`` (see
-  ``types.async_def()`` later in this PEP).  This is to make all existing
-  coroutines in asyncio compatible with the new proposal.
+* An object with an ``__await__`` method returning an iterator.
 
-* objects with an ``__await__`` method that returns an iterator.
+  Any ``yield from`` chain of calls ends with a ``yield``.  This is a
+  fundamental mechanism of how *Futures* are implemented.  Since, internally,
+  coroutines are a special kind of generators, every ``await`` is suspended by
+  a ``yield`` somewhere down the chain of ``await`` calls (please refer to PEP
+  3156 for a detailed explanation.)
 
-  Any ``yield from`` in asyncio ends up at some ``yield``.  This is a
-  fundamental mechanism of how Futures must be implemented.  Since async
-  functions are special kind of generators, every ``await`` is suspended by a
-  ``yield`` somewhere down the chain of ``await`` calls (please refer to PEP
-  3156 for detailed explanation.)
-
-  To enable this behavior for async functions, a new magic method called
-  ``__await__`` is added.  For asyncio, for instance, to enable Future objects
+  To enable this behavior for coroutines, a new magic method called
+  ``__await__`` is added.  In asyncio, for instance, to enable Future objects
   in ``await`` statements, the only change is to add ``__await__ = __iter__``
-  line to the Future class.
+  line to ``asyncio.Future`` class.
 
-  Objects with ``__await__`` method are called **Future-like** objects in the
+  Objects with ``__await__`` method are called *Future-like* objects in the
   rest of this PEP.
 
   Also, please note that ``__aiter__`` method (see its definition below) cannot
   be used for this purpose.  It is a different protocol, and would be like
   using ``__iter__`` instead of ``__call__`` for regular callables.
 
-It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
+It is a ``SyntaxError`` to use ``await`` outside of a coroutine.
 
 
 Asynchronous Context Managers and "async with"
 ----------------------------------------------
 
-An asynchronous Context Manager is be able to suspend execution in its
-**enter** and **exit** methods.
+An *asynchronous context manager* is a context manager that is able to suspend
+execution in its *enter* and *exit* methods.
 
-To make it possible  new protocol for asynchronous context managers is
-proposed.  Two new magic methods are added: ``__aenter__`` and
-``__aexit__``.  Both must either return a **Future-like** object, or be an
-``async`` function.
+To make this possible, a new protocol for asynchronous context managers is
+proposed.  Two new magic methods are added: ``__aenter__`` and ``__aexit__``.
+Both must return an *awaitable*.
+
+An example of an asynchronous context manager::
+
+    class AsyncContextManager:
+        async def __aenter__(self):
+            await log('entering context')
+
+        async def __aexit__(self, exc_type, exc, tb):
+            await log('exiting context')
 
 
 New Syntax
@@ -151,7 +181,7 @@ A new statement for asynchronous context managers is proposed::
         BLOCK
 
 
-which is roughly equivalent to::
+which is semantically equivalent to::
 
     mgr = (EXPR)
     aexit = type(mgr).__aexit__
@@ -173,19 +203,19 @@ which is roughly equivalent to::
             await aexit(mgr, None, None, None)
 
 
-As with regular ``with`` statements it is possible to specify multiple context
-managers in one ``async with`` statement.
-
+As with regular ``with`` statements, it is possible to specify multiple context
+managers in a single ``async with`` statement.
 
 It is an error to pass a regular context manager without ``__aenter__`` and
-``__aexit__`` methods to ``async with``.
+``__aexit__`` methods to ``async with``.  It is a ``SyntaxError`` to use
+``async with`` outside of a coroutine.
 
 
 Example
 '''''''
 
-With async context managers it is easy to implement proper database transaction
-managers for coroutines::
+With asynchronous context managers it is easy to implement proper database
+transaction managers for coroutines::
 
     async def commit(session, data):
         ...
@@ -209,54 +239,34 @@ instead of::
 Asynchronous Iterators and "async for"
 --------------------------------------
 
-An asynchronous iterator is be able to call asynchronous code in its magic
-**next** implementation.  A new iteration protocol is proposed: an object that
-supports asynchronous iteration must implement a ``__aiter__`` asynchronous
-method, which must in turn return an object with ``__anext__`` asynchronous
-method.  ``__anext__`` must raise a ``StopAsyncIteration`` exception when the
-iteration is over.
+An *asynchronous iterable* is able to call asynchronous code in its *iter*
+implementation, and *asynchronous iterator* can call asynchronous code in its
+*next* method.  To support asynchronous iteration:
 
-Since it is prohibited to have ``yield`` inside async functions, it's not
-possible to create asynchronous iterators by creating a generator with both
-``await`` and ``yield`` expressions.
+1. An object must implement an  ``__aiter__`` method returning an *awaitable*
+   resulting in an *asynchronous iterator object*.
 
+2. An *asynchronous iterator object* must implement an ``__anext__`` method
+   returning an *awaitable*.
 
-Why StopAsyncIteration?
-'''''''''''''''''''''''
+3. To stop iteration```__anext__`` must raise a ``StopAsyncIteration``
+   exception.
 
-Async functions are still generators.  So before PEP 479, there was no
-**fundamental** difference between
+An example of asynchronous iterable::
 
-::
+    class AsyncIterable:
+        async def __aiter__(self):
+            return self
 
-    def g1():
-        yield from fut
-        return 'spam'
+        async def __anext__(self):
+            data = await self.fetch_data()
+            if data:
+                return data
+            else:
+                raise StopAsyncIteration
 
-and
-
-::
-
-    def g2():
-        yield from fut
-        raise StopIteration('spam')
-
-And since PEP 479 is accepted and enabled by default for async functions, the
-following example will have its ``StopIteration`` wrapped into a
-``RuntimeError``
-
-::
-
-    async def a1():
-        await fut
-        raise StopIteration('spam')
-
-The only way to tell the outside code that the iteration has ended is to raise
-something other than ``StopIteration``.  Therefore, a new built-in exception
-class ``StopAsyncIteration`` was added.
-
-Moreover, with semantics from PEP 479, all ``StopIteration`` exceptions raised
-in async functions are wrapped in ``RuntimeError``.
+        async def fetch_data(self):
+            ...
 
 
 New Syntax
@@ -269,7 +279,7 @@ A new statement for iterating through asynchronous iterators is proposed::
     else:
         BLOCK2
 
-which is roughly equivalent to::
+which is semantically equivalent to::
 
     iter = (ITER)
     iter = await type(iter).__aiter__(iter)
@@ -289,19 +299,11 @@ As for with regular ``for`` statement, ``async for`` has an optional ``else``
 clause.
 
 
-Comprehensions
-''''''''''''''
-
-For the sake of restricting the broadness of this PEP there is no new syntax
-for asynchronous comprehensions.  This should be considered in a separate PEP,
-if there is a strong demand for this feature.
-
-
 Example 1
 '''''''''
 
-With asynchronous iteration protocol it's possible to asynchronously buffer
-data during the iteration::
+With asynchronous iteration protocol it is possible to asynchronously buffer
+data during iteration::
 
     async for data in cursor:
         ...
@@ -348,7 +350,7 @@ which would be equivalent to the following code::
 Example 2
 '''''''''
 
-The following is a utility class that transforms a regular iterator to
+The following is a utility class that transforms a regular iterable to an
 asynchronous one.  While this is not a very useful thing to do, the code
 illustrates the relationship between regular and asynchronous iterators.
 
@@ -372,6 +374,44 @@ illustrates the relationship between regular and asynchronous iterators.
     it = AsyncIteratorWrapper("abc")
     async for item in it:
         print(it)
+
+
+Why StopAsyncIteration?
+'''''''''''''''''''''''
+
+Coroutines are still based on generators internally.  So, before PEP 479, there
+was no fundamental difference between
+
+::
+
+    def g1():
+        yield from fut
+        return 'spam'
+
+and
+
+::
+
+    def g2():
+        yield from fut
+        raise StopIteration('spam')
+
+And since PEP 479 is accepted and enabled by default for coroutines, the
+following example will have its ``StopIteration`` wrapped into a
+``RuntimeError``
+
+::
+
+    async def a1():
+        await fut
+        raise StopIteration('spam')
+
+The only way to tell the outside code that the iteration has ended is to raise
+something other than ``StopIteration``.  Therefore, a new built-in exception
+class ``StopAsyncIteration`` was added.
+
+Moreover, with semantics from PEP 479, all ``StopIteration`` exceptions raised
+in coroutines are wrapped in ``RuntimeError``.
 
 
 Debugging Features
@@ -399,11 +439,11 @@ variable ``PYTHONASYNCIODEBUG``.  This way it is possible to run asyncio
 programs with asyncio's own functions instrumented.  ``EventLoop.set_debug``, a
 different debug facility, has no impact on ``@coroutine`` decorator's behavior.
 
-With this proposal, async functions is a native, distinct from generators,
+With this proposal, coroutines is a native, distinct from generators,
 concept.  A new method ``set_async_wrapper`` is added to the ``sys`` module,
 with which frameworks can provide advanced debugging facilities.
 
-It is also important to make async functions as fast and efficient as possible,
+It is also important to make coroutines as fast and efficient as possible,
 therefore there are no debug features enabled by default.
 
 Example::
@@ -440,34 +480,35 @@ generator         yield, yield from, return                await
 
 Where:
 
-* ""async def func": async function;
+* ""async def func": coroutine;
 
 * "async def __a*__": ``__aiter__``, ``__anext__``, ``__aenter__``,
   ``__aexit__`` defined with the ``async`` keyword;
 
 * "def __a*__": ``__aiter__``, ``__anext__``, ``__aenter__``, ``__aexit__``
-  defined without the ``async`` keyword, must return a Future-like object;
+  defined without the ``async`` keyword, must return an *awaitable*;
 
-* "def __await__": ``__await__`` method to implement Future-like objects;
+* "def __await__": ``__await__`` method to implement *Future-like* objects;
 
 * generator: a "regular" generator, function defined with ``def`` and which
   contains a least one ``yield`` or ``yield from`` expression.
 
-**Future-like** is an object with an ``__await__`` method.
+*Future-like* is an object with an ``__await__`` method, see
+`Await Expression`_ section for details.
 
 
 Transition Plan
 ===============
 
-To avoid backwards compatibility issues with **async** and **await** keywords,
-it was decided to modify ``tokenizer.c`` in such a way, that it does:
+To avoid backwards compatibility issues with ``async`` and ``await`` keywords,
+it was decided to modify ``tokenizer.c`` in such a way, that it:
 
-* recognize ``async def`` name tokens combination;
+* recognizes ``async def`` name tokens combination (start of a coroutine);
 
-* keep track of regular and async functions;
+* keeps track of regular functions and coroutines;
 
-* replace ``'async'`` token with ``ASYNC`` and ``'await'`` token with ``AWAIT``
-  when in the process of yielding tokens for async functions.
+* replaces ``'async'`` token with ``ASYNC`` and ``'await'`` token with
+  ``AWAIT`` when in the process of yielding tokens for coroutines.
 
 This approach allows for seamless combination of new syntax features (all of
 them available only in ``async`` functions) with any existing code.
@@ -561,19 +602,10 @@ In 3.7 we will transform them to proper keywords.  Making ``async`` and
 their code to Python 3.
 
 
-types.async_def()
-----------------
-
-A new function is added to the ``types`` module: ``async_def(gen)``.  It
-applies ``CO_ASYNC`` bit to the passed generator's code object, so that it can
-be awaited on in async functions.  This is to enable an easy upgrade path for
-existing libraries.
-
-
 asyncio
 -------
 
-``asyncio`` module was adapted and tested to work with async functions and new
+``asyncio`` module was adapted and tested to work with coroutines and new
 statements.  Backwards compatibility is 100% preserved.
 
 The required changes are mainly:
@@ -591,12 +623,12 @@ No implicit wrapping in Futures
 -------------------------------
 
 There is a proposal to add similar mechanism to ECMAScript 7 [3]_.  A key
-difference is that JavaScript async functions always return a Promise. While
+difference is that JavaScript "async functions" always return a Promise. While
 this approach has some advantages, it also implies that a new Promise object is
-created on each async function invocation.
+created on each "async function" invocation.
 
-We could implement a similar functionality in Python, by wrapping all async
-functions in a Future object, but this has the following disadvantages:
+We could implement a similar functionality in Python, by wrapping all
+coroutines in a Future object, but this has the following disadvantages:
 
 1. Performance.  A new Future object would be instantiated on each coroutine
    call.  Moreover, this makes implementation of ``await`` expressions slower
@@ -653,7 +685,7 @@ Importance of "async" keyword
 -----------------------------
 
 While it is possible to just implement ``await`` expression and treat all
-functions with at least one ``await`` as async functions, this approach makes
+functions with at least one ``await`` as coroutines, this approach makes
 APIs design, code refactoring and its long time support harder.
 
 Let's pretend that Python only has ``await`` keyword::
@@ -697,9 +729,9 @@ for future python versions.
 Why magic methods start with "a"
 --------------------------------
 
-New async magic methods ``__aiter__``, ``__anext__``, ``__aenter__``, and
-``__aexit__`` all start with the same prefix "a".  An alternative proposal is
-to use "async" prefix, so that ``__aiter__`` becomes ``__async_iter__``.
+New asynchronous magic methods ``__aiter__``, ``__anext__``, ``__aenter__``,
+and ``__aexit__`` all start with the same prefix "a".  An alternative proposal
+is to use "async" prefix, so that ``__aiter__`` becomes ``__async_iter__``.
 However, to align new magic methods with the existing ones, such as
 ``__radd__`` and ``__iadd__`` it was decided to use a shorter version.
 
@@ -707,8 +739,8 @@ However, to align new magic methods with the existing ones, such as
 Why not reuse existing magic names
 ----------------------------------
 
-An alternative idea about new async iterators and context managers was to re-
-use existing magic methods, by adding an ``async`` keyword to their
+An alternative idea about new asynchronous iterators and context managers was
+to reuse existing magic methods, by adding an ``async`` keyword to their
 declarations::
 
     class CM:
@@ -723,8 +755,16 @@ This approach has the following downsides:
 * it looks confusing and would require some implicit magic behind the scenes in
   the interpreter;
 
-* one of the main points of this proposal is to make async functions as simple
-  and fool-proofed as possible.
+* one of the main points of this proposal is to make coroutines as simple
+  and foolproof as possible.
+
+
+Comprehensions
+--------------
+
+For the sake of restricting the broadness of this PEP there is no new syntax
+for asynchronous comprehensions.  This should be considered in a separate PEP,
+if there is a strong demand for this feature.
 
 
 Performance
@@ -819,16 +859,16 @@ The reference implementation can be found here: [4]_.
 List of high-level changes and new protocols
 --------------------------------------------
 
-1. New syntax for defining async functions: ``async def`` and new ``await``
+1. New syntax for defining coroutines: ``async def`` and new ``await``
    keyword.
 
 2. New ``__await__`` method for Future-like objects.
 
-3. New syntax for async context managers: ``async with``.  And associated
-   protocol with ``__aenter__`` and ``__aexit__`` methods.
+3. New syntax for asynchronous context managers: ``async with``.  And
+   associated protocol with ``__aenter__`` and ``__aexit__`` methods.
 
-4. New syntax for async iteration: ``async for``.  And associated protocol
-   with ``__aiter__``, ``__aexit__`` and new built-in exception
+4. New syntax for asynchronous iteration: ``async for``.  And associated
+   protocol with ``__aiter__``, ``__aexit__`` and new built-in exception
    ``StopAsyncIteration``.
 
 5. New AST nodes: ``AsyncFor``, ``AsyncWith``, ``Await``; ``FunctionDef`` AST
@@ -886,7 +926,7 @@ implementation is **not** production ready!
 References
 ==========
 
-.. [1] https://docs.python.org/3/library/asyncio.html
+.. [1] https://docs.python.org/3/library/asyncio-task.html#asyncio.coroutine
 
 .. [2] https://pypi.python.org/pypi/trollius
 
