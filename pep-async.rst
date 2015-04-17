@@ -993,3 +993,16 @@ References
 .. [9] https://github.com/google/traceur-compiler/wiki/LanguageFeatures#async-functions-experimental
 
 .. [10] http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3722.pdf (PDF)
+
+
+Acknowledgments
+===============
+
+I thank Guido van Rossum, Victor Stinner, Elvis Pranskevichus, Andrew Svetlov,
+and Łukasz Langa for their initial feedback.
+
+
+Copyright
+=========
+
+This document has been placed in the public domain.
