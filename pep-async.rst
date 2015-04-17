@@ -62,7 +62,8 @@ framework.)
 New Coroutines Declaration Syntax
 ---------------------------------
 
-Use ``async`` and ``def`` keywords to declare a coroutine::
+Use ``async`` and ``def`` keywords to declare a coroutine ("async function"
+later in this PEP, to avoid confusion)::
 
     async def read_data(db):
         ...
