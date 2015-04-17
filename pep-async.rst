@@ -42,7 +42,7 @@ from coroutines and vice-versa.  It also enables linters and IDEs to improve
 static code analysis and refactoring.
 
 Introducing the ``async`` keyword enables creation of asynchronous context
-manager and iteration protocols.  The former lets Python perform non-blocking
+managers and iteration protocols.  The former lets Python perform non-blocking
 operations upon entering and exiting the context manager, while the latter lets
 Python perform non-blocking operations during iteration steps (in an equivalent
 of ``__next__()``).
