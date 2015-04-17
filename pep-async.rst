@@ -67,7 +67,7 @@ implemented in Python (PEP 342 and PEP 380).  It is also recommended to read
 PEP 3156 (asyncio framework).
 
 From this point in this document we use the word *coroutine* to refer to
-functions declared using the new syntax.  We use *generator-based coroutine*
+functions declared using the new syntax.  *generator-based coroutine* is used
 where necessary to refer to coroutines that are based on generator syntax.
 
 
