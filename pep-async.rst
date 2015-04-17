@@ -144,7 +144,7 @@ must either return a **Future-like** object, or be an ``async`` function.
 
 
 New Syntax
-++++++++++
+''''''''''
 
 A new statement for asynchronous context managers is proposed::
 
@@ -183,7 +183,7 @@ It is an error to pass a regular context manager without ``__aenter__`` and
 
 
 Example
-+++++++
+'''''''
 
 With async context managers it is easy to implement proper database transaction
 managers for coroutines::
@@ -223,7 +223,7 @@ possible to create asynchronous iterators by creating a generator with both
 
 
 Why StopAsyncIteration?
-+++++++++++++++++++++++
+'''''''''''''''''''''''
 
 Async functions are still generators.  So before PEP 479, there was no
 **fundamental** difference between
@@ -261,7 +261,7 @@ in async functions will be wrapped in ``RuntimeError``.
 
 
 New Syntax
-++++++++++
+''''''''''
 
 A new statement for iterating through asynchronous iterators is proposed::
 
@@ -291,14 +291,14 @@ As for with regular ``for`` statement, ``async for`` will have an optional
 
 
 Comprehensions
-++++++++++++++
+''''''''''''''
 
 For the sake of restricting the broadness of this PEP there is no new syntax
 for asynchronous comprehensions.  This should be considered in a separate PEP.
 
 
 Example 1
-+++++++++
+'''''''''
 
 With asynchronous iteration protocol it will be possible to asynchronously
 buffer data during the iteration::
@@ -346,7 +346,7 @@ which would be equivalent to the following code::
 
 
 Example 2
-+++++++++
+'''''''''
 
 The following is a utility class that transforms a regular iterator to
 asynchronous one.  While this is not a very useful thing to do, the code
