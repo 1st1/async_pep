@@ -502,11 +502,11 @@ Glossary
 
 :Asynchronous iterable:
     An object with an ``__aiter__`` method, which must return an *asynchronous
-    iterator* object.  Can be used with ``async for``. See
+    iterator* object.  Can be used with ``async for``.  See
     `Asynchronous Iterators and "async for"`_ for details.
 
 :Asynchronous iterator:
-    An asynchronous iterator has an ``__anext__`` method.See
+    An asynchronous iterator has an ``__anext__`` method.  See
     `Asynchronous Iterators and "async for"`_ for details.
 
 
