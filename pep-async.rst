@@ -554,7 +554,7 @@ This limitation will go away as soon as ``async`` is a proper keyword.
 Deprecation Plans
 -----------------
 
-``async`` and ``await`` names will be softly deprecated in CPython 3.5 and 3.6/
+``async`` and ``await`` names will be softly deprecated in CPython 3.5 and 3.6.
 In 3.7 we will transform them to proper keywords.  Making ``async`` and
 ``await`` proper keywords before 3.7 might make it harder for people to port
 their code to Python 3.
