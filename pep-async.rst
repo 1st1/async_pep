@@ -698,7 +698,7 @@ Why magic methods start with "a"
 
 New async magic methods ``__aiter__``, ``__anext__``, ``__aenter__``, and
 ``__aexit__`` all start with the same prefix "a".  An alternative proposal is to
-use "async" prefix, so that ``__aiter__`` would be ``__async_iter__``.  However,
+use "async" prefix, so that ``__aiter__`` becomes ``__async_iter__``.  However,
 to align new magic methods with the existing ones, such as ``__radd__`` and
 ``__iadd__`` it was decided to use a shorter version.
 
