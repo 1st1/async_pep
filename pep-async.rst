@@ -548,7 +548,8 @@ easily rewritten to a more readable form::
     async def foo():                               # 2
         return (await fut)
 
-This limitation will go away as soon as ``async`` is a proper keyword.
+This limitation will go away as soon as ``async`` is a proper keyword.  Or if
+it's decided to use a future import for this PEP.
 
 
 Deprecation Plans
