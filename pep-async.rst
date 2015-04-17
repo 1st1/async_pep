@@ -434,7 +434,7 @@ def __await__     yield, yield from, return iterable       await
 generator         yield, yield from, return                await
 ================= =======================================  =================
 
-Methods:
+Where:
 
 * ""async def func": async function;
 
