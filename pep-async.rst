@@ -578,7 +578,7 @@ new statements.  Backwards compatibility will be 100% preserved.
 The required changes are mainly:
 
 1. Modify ``@asyncio.coroutine`` decorator to use new ``types.async_def()``
-   function on all wrapped generators.
+   function on all wrapped functions.
 
 2. Add ``__await__ = __iter__`` line to ``asyncio.Future`` class.
 
