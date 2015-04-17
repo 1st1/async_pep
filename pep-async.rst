@@ -628,11 +628,11 @@ async/await is not a new concept in programming languages:
 
 * proposal to add async/await to C++ [11]_;
 
-* And many other less popular languages.
+* and many other less popular languages.
 
 This is a huge benefit, as some users already have experience with async/await,
 and because it makes working with many languages in one project easier (Python
-with ECMAScript 7 / Dart).
+with ECMAScript 7 for instance).
 
 
 Why "__aiter__" is async
