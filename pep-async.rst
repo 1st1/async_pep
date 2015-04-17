@@ -174,8 +174,8 @@ which is roughly equivalent to::
             await aexit(mgr, None, None, None)
 
 
-As with regular ``with`` statements it is possible to specify a list of context
-managers.
+As with regular ``with`` statements it is possible to specify multiple context
+managers in one ``async with`` statement.
 
 
 It is an error to pass a regular context manager without ``__aenter__`` and
