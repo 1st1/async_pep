@@ -814,8 +814,8 @@ Reference Implementation
 
 The reference implementation can be found here: [4]_.
 
-List of high-level changes
---------------------------
+List of high-level changes and new protocols
+--------------------------------------------
 
 1. New syntax for defining async functions: ``async def`` and new ``await``
    keyword.
