@@ -622,7 +622,7 @@ Design Considerations
 No implicit wrapping in Futures
 -------------------------------
 
-There is a proposal to add similar mechanism to ECMAScript 7 [3]_.  A key
+There is a proposal to add similar mechanism to ECMAScript 7 [2]_.  A key
 difference is that JavaScript "async functions" always return a Promise. While
 this approach has some advantages, it also implies that a new Promise object is
 created on each "async function" invocation.
@@ -648,18 +648,18 @@ Why "async" and "await" keywords
 
 async/await is not a new concept in programming languages:
 
-* C# has it since long time ago [6]_;
+* C# has it since long time ago [5]_;
 
-* proposal to add async/await in ECMAScript 7 [3]_;
-  see also Traceur project [10]_;
+* proposal to add async/await in ECMAScript 7 [2]_;
+  see also Traceur project [9]_;
 
-* Facebook's Hack/HHVM [7]_;
+* Facebook's Hack/HHVM [6]_;
 
-* Google's Dart language [8]_;
+* Google's Dart language [7]_;
 
-* Scala [9]_;
+* Scala [8]_;
 
-* proposal to add async/await to C++ [11]_;
+* proposal to add async/await to C++ [10]_;
 
 * and many other less popular languages.
 
@@ -774,7 +774,7 @@ Overall Impact
 --------------
 
 This proposal introduces no observable performance impact.  Here is an output
-of python's official set of benchmarks [5]_:
+of python's official set of benchmarks [4]_:
 
 ::
 
@@ -854,7 +854,7 @@ example run (note that depth of 19 means 1,048,575 calls):
 Reference Implementation
 ========================
 
-The reference implementation can be found here: [4]_.
+The reference implementation can be found here: [3]_.
 
 List of high-level changes and new protocols
 --------------------------------------------
@@ -889,7 +889,7 @@ for`` and ``async with`` syntax.
 Working example
 ---------------
 
-All concepts proposed in this PEP are implemented [4]_ and can be tested.  The
+All concepts proposed in this PEP are implemented [3]_ and can be tested.  The
 implementation is **not** production ready!
 
 ::
@@ -928,26 +928,20 @@ References
 
 .. [1] https://docs.python.org/3/library/asyncio-task.html#asyncio.coroutine
 
-.. [2] https://pypi.python.org/pypi/trollius
+.. [2] http://wiki.ecmascript.org/doku.php?id=strawman:async_functions
 
-.. [3] http://wiki.ecmascript.org/doku.php?id=strawman:async_functions
+.. [3] https://github.com/1st1/cpython/tree/await
 
-.. [4] https://github.com/1st1/cpython/tree/await
+.. [4] https://hg.python.org/benchmarks
 
-.. [5] https://hg.python.org/benchmarks
+.. [5] https://msdn.microsoft.com/en-us/library/hh191443.aspx
 
-.. [6] https://msdn.microsoft.com/en-us/library/hh191443.aspx
+.. [6] http://docs.hhvm.com/manual/en/hack.async.php
 
-.. [7] http://docs.hhvm.com/manual/en/hack.async.php
+.. [7] https://www.dartlang.org/articles/await-async/
 
-.. [8] https://www.dartlang.org/articles/await-async/
+.. [8] http://docs.scala-lang.org/sips/pending/async.html
 
-.. [9] http://docs.scala-lang.org/sips/pending/async.html
+.. [9] https://github.com/google/traceur-compiler/wiki/LanguageFeatures#async-functions-experimental
 
-.. [10] https://github.com/google/traceur-compiler/wiki/LanguageFeatures#async-functions-experimental
-
-.. [11] http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3722.pdf (PDF)
-
-.. [12] https://twistedmatrix.com/trac/
-
-.. [13] http://www.tornadoweb.org/en/stable/
+.. [10] http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3722.pdf (PDF)
