@@ -76,16 +76,14 @@ Some key properties of async functions:
 * It is a syntax error to have ``yield`` or ``yield from`` expressions in
   ``async`` function.
 
-* A new bit flag ``CO_ASYNC`` for code object's ``co_flag`` field will be
-  introduced to allow runtime detection of async functions (and migrating
-  existing code).  All async functions have both ``CO_ASYNC`` and
-  ``CO_GENERATOR`` bits set.
+* A new bit flag ``CO_ASYNC`` for code object's ``co_flag`` field is introduced
+  to allow runtime detection of async functions (and migrating existing code).
+  All async functions have both ``CO_ASYNC`` and ``CO_GENERATOR`` bits set.
 
-* ``StopIteration`` exceptions will not be propagated out of async functions;
-  instead they will be wrapped in a ``RuntimeError``.  For regular generators
-  such behavior requires a future import (see PEP 479), but since async
-  functions is a new concept, it is safe to have this feature enabled for them
-  by default.
+* ``StopIteration`` exceptions are not propagated out of async functions;
+  instead they are wrapped in a ``RuntimeError``.  For regular generators such
+  behavior requires a future import (see PEP 479), but since async functions is
+  a new concept, it is safe to have this feature enabled for them by default.
 
 
 Await Expression
@@ -100,8 +98,8 @@ Await expression is almost a direct equivalent of ``yield from``::
 ``await`` suspends the ``read_data`` function until ``db.fetch`` async function
 or future-like object completes and returns the result data.
 
-It will use the ``yield from`` implementation with an extra quick step of
-validating its argument.  It will only accept:
+It uses the ``yield from`` implementation with an extra quick step of
+validating its argument.  It only accepts:
 
 * ``async def`` functions.
 
@@ -113,17 +111,17 @@ validating its argument.  It will only accept:
 
   Any ``yield from`` in asyncio ends up at some ``yield``.  This is a
   fundamental mechanism of how Futures must be implemented.  Since async
-  functions are special kind of generators, every ``await`` will be suspended
-  by a ``yield`` somewhere down the chain of ``await`` calls (please refer to
-  PEP 3156 for detailed explanation.)
+  functions are special kind of generators, every ``await`` is suspended by a
+  ``yield`` somewhere down the chain of ``await`` calls (please refer to PEP
+  3156 for detailed explanation.)
 
   To enable this behavior for async functions, a new magic method called
-  ``__await__`` will be added.  For asyncio, for instance, to enable Future
-  objects in ``await`` statements, the only change is to add ``__await__ =
-  __iter__`` line to the Future class.
+  ``__await__`` is added.  For asyncio, for instance, to enable Future objects
+  in ``await`` statements, the only change is to add ``__await__ = __iter__``
+  line to the Future class.
 
-  Objects with ``__await__`` method will be called **Future-like** objects in
-  the rest of this PEP.
+  Objects with ``__await__`` method are called **Future-like** objects in the
+  rest of this PEP.
 
   Also, please note that ``__aiter__`` method (see its definition below) cannot
   be used for this purpose.  It is a different protocol, and would be like
@@ -135,11 +133,11 @@ It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 Asynchronous Context Managers and "async with"
 ----------------------------------------------
 
-An asynchronous Context Manager will be able to suspend execution in its
+An asynchronous Context Manager is be able to suspend execution in its
 **enter** and **exit** methods.
 
 To make it possible  new protocol for asynchronous context managers is
-proposed.  Two new magic methods will be added: ``__aenter__`` and
+proposed.  Two new magic methods are added: ``__aenter__`` and
 ``__aexit__``.  Both must either return a **Future-like** object, or be an
 ``async`` function.
 
@@ -197,7 +195,7 @@ managers for coroutines::
             await session.update(data)
             ...
 
-Code that needs locking will also look lighter::
+Code that needs locking also looks lighter::
 
     async with lock:
         ...
@@ -211,7 +209,7 @@ instead of::
 Asynchronous Iterators and "async for"
 --------------------------------------
 
-An asynchronous iterator will be able to call asynchronous code in its magic
+An asynchronous iterator is be able to call asynchronous code in its magic
 **next** implementation.  A new iteration protocol is proposed: an object that
 supports asynchronous iteration must implement a ``__aiter__`` asynchronous
 method, which must in turn return an object with ``__anext__`` asynchronous
@@ -258,7 +256,7 @@ something other than ``StopIteration``.  Therefore, a new built-in exception
 class ``StopAsyncIteration`` was added.
 
 Moreover, with semantics from PEP 479, all ``StopIteration`` exceptions raised
-in async functions will be wrapped in ``RuntimeError``.
+in async functions are wrapped in ``RuntimeError``.
 
 
 New Syntax
@@ -287,8 +285,8 @@ which is roughly equivalent to::
         BLOCK2
 
 
-As for with regular ``for`` statement, ``async for`` will have an optional
-``else`` clause.
+As for with regular ``for`` statement, ``async for`` has an optional ``else``
+clause.
 
 
 Comprehensions
@@ -301,8 +299,8 @@ for asynchronous comprehensions.  This should be considered in a separate PEP.
 Example 1
 '''''''''
 
-With asynchronous iteration protocol it will be possible to asynchronously
-buffer data during the iteration::
+With asynchronous iteration protocol it's possible to asynchronously buffer
+data during the iteration::
 
     async for data in cursor:
         ...
@@ -401,8 +399,8 @@ programs with asyncio's own functions instrumented.  ``EventLoop.set_debug``, a
 different debug facility, has no impact on ``@coroutine`` decorator's behavior.
 
 With this proposal, async functions is a native, distinct from generators,
-concept.  A new method ``set_async_wrapper`` will be added to the ``sys``
-module, with which frameworks can provide advanced debugging facilities.
+concept.  A new method ``set_async_wrapper`` is added to the ``sys`` module,
+with which frameworks can provide advanced debugging facilities.
 
 It is also important to make async functions as fast and efficient as possible,
 therefore there are no debug features enabled by default.
@@ -461,7 +459,7 @@ Transition Plan
 ===============
 
 To avoid backwards compatibility issues with **async** and **await** keywords,
-it was decided to modify ``tokenizer.c`` in such a way, that it will:
+it was decided to modify ``tokenizer.c`` in such a way, that it does:
 
 * recognize ``async def`` name tokens combination;
 
@@ -564,17 +562,17 @@ their code to Python 3.
 types.async_def()
 ----------------
 
-A new function will be added to the ``types`` module: ``async_def(gen)``.  It
-will apply ``CO_ASYNC`` bit to the passed generator's code object, so that it
-can be awaited on in async functions.  This is to enable an easy upgrade path
-for existing libraries.
+A new function is added to the ``types`` module: ``async_def(gen)``.  It
+applies ``CO_ASYNC`` bit to the passed generator's code object, so that it can
+be awaited on in async functions.  This is to enable an easy upgrade path for
+existing libraries.
 
 
 asyncio
 -------
 
-``asyncio`` module will be adapted and tested to work with async functions and
-new statements.  Backwards compatibility will be 100% preserved.
+``asyncio`` module was adapted and tested to work with async functions and new
+statements.  Backwards compatibility is 100% preserved.
 
 The required changes are mainly:
 
@@ -591,16 +589,16 @@ No implicit wrapping in Futures
 -------------------------------
 
 There is a proposal to add similar mechanism to ECMAScript 7 [3]_.  A key
-difference is that JavaScript async functions will always return a Promise.
-While this approach has some advantages, it also implies that a new Promise
-object will be created on each async function invocation.
+difference is that JavaScript async functions always return a Promise. While
+this approach has some advantages, it also implies that a new Promise object is
+created on each async function invocation.
 
 We could implement a similar functionality in Python, by wrapping all async
 functions in a Future object, but this has the following disadvantages:
 
 1. Performance.  A new Future object would be instantiated on each coroutine
-   call.  Moreover, this will make implementation of ``await`` expressions
-   slower (disabling optimizations of ``yield from``).
+   call.  Moreover, this makes implementation of ``await`` expressions slower
+   (disabling optimizations of ``yield from``).
 
 2. A new built-in ``Future`` object would need to be added.
 
@@ -653,8 +651,8 @@ Importance of "async" keyword
 -----------------------------
 
 While it is possible to just implement ``await`` expression and treat all
-functions with at least one ``await`` as async functions, this approach will
-make APIs design, code refactoring and its long time support harder.
+functions with at least one ``await`` as async functions, this approach makes
+APIs design, code refactoring and its long time support harder.
 
 Let's pretend that Python only has ``await`` keyword::
 
@@ -668,7 +666,7 @@ Let's pretend that Python only has ``await`` keyword::
 
 If ``useful()`` function is refactored and someone removes all ``await``
 expressions from it, it would become a regular python function, and all code
-that depends on it, including ``important()`` will be broken.  To mitigate this
+that depends on it, including ``important()`` would be broken.  To mitigate this
 issue a decorator similar to ``@asyncio.coroutine`` has to be introduced.
 
 
@@ -687,11 +685,11 @@ Why not a "future" import
 
 "Future" imports are inconvenient and easy to forget to add.  Also, they are
 enabled for the whole source file.  Consider that there is a big project with a
-popular module named "async.py".  With future imports it will be required to
-either import it using ``__import__()`` or ``importlib.import_module()`` calls,
-or to rename the module.  The proposed approach makes it possible to continue
-using old code and modules without a hassle, while coming up with a migration
-plan for future python versions.
+popular module named "async.py".  With future imports it is required to either
+import it using ``__import__()`` or ``importlib.import_module()`` calls, or to
+rename the module.  The proposed approach makes it possible to continue using
+old code and modules without a hassle, while coming up with a migration plan
+for future python versions.
 
 
 Why magic methods start with "a"
