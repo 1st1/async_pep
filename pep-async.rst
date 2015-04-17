@@ -293,7 +293,8 @@ Comprehensions
 ''''''''''''''
 
 For the sake of restricting the broadness of this PEP there is no new syntax
-for asynchronous comprehensions.  This should be considered in a separate PEP.
+for asynchronous comprehensions.  This should be considered in a separate PEP,
+if there is a strong demand for this feature.
 
 
 Example 1
