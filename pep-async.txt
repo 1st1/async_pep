@@ -374,10 +374,8 @@ illustrates the relationship between regular and asynchronous iterators.
                 raise StopAsyncIteration
             return value
 
-    data = "abc"
-    it = AsyncIteratorWrapper("abc")
-    async for item in it:
-        print(it)
+    async for item in AsyncIteratorWrapper("abc"):
+        print(item)
 
 
 Why StopAsyncIteration?
