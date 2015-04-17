@@ -349,7 +349,10 @@ Example 2
 +++++++++
 
 The following is a utility class that transforms a regular iterator to
-asynchronous one::
+asynchronous one.  While this is not a very useful thing to do, the code
+illustrates the relationship between regular and asynchronous iterators.
+
+::
 
     class AsyncIteratorWrapper:
         def __init__(self, obj):
