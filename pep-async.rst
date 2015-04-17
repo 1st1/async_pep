@@ -392,8 +392,8 @@ exactly the decorator function was defined, stack trace of where it was
 collected, etc.  Wrapper object also provides a convenient ``__repr__`` function
 with detailed information about the generator.
 
-The only problem is how to enable this debug capabilities.  Since debug
-facilities should be no-op in production mode, ``@coroutine`` decorator makes
+The only problem is how to enable these debug capabilities.  Since debug
+facilities should be a no-op in production mode, ``@coroutine`` decorator makes
 the decision of whether to wrap or not to wrap based on an OS environment
 variable ``PYTHONASYNCIODEBUG``.  This way it is possible to run asyncio
 programs with asyncio's own functions instrumented.  ``EventLoop.set_debug``, a
@@ -403,8 +403,8 @@ With this proposal, async functions is a native, distinct from generators,
 concept.  A new method ``set_async_wrapper`` will be added to the ``sys``
 module, with which frameworks can provide advanced debugging facilities.
 
-It is also important to make async functions as fast as possible, therefore
-there are no debug features enabled by default.
+It is also important to make async functions as fast and efficient as possible,
+therefore there are no debug features enabled by default.
 
 Example::
 
