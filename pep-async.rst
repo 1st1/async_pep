@@ -603,6 +603,12 @@ functions in a Future object, but this has the following disadvantages:
 
 2. A new built-in ``Future`` object would need to be added.
 
+3. Coming up with a generic ``Future`` interface that is usable for any use case
+   in any framework is a very hard to solve problem.
+
+4. It is not a feature that is used frequently, when most of your code is
+   coroutines.
+
 
 Why "async" and "await" keywords
 --------------------------------
