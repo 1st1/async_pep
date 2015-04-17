@@ -443,10 +443,10 @@ Where:
 * ""async def func": async function;
 
 * "async def __a*__": ``__aiter__``, ``__anext__``, ``__aenter__``,
-  ``__aexit__`` defined with the async keyword;
+  ``__aexit__`` defined with the ``async`` keyword;
 
 * "def __a*__": ``__aiter__``, ``__anext__``, ``__aenter__``, ``__aexit__``
-  defined without the async keyword, must return a Future-like object;
+  defined without the ``async`` keyword, must return a Future-like object;
 
 * "def __await__": ``__await__`` method to implement Future-like objects;
 
