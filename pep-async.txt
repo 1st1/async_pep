@@ -525,7 +525,7 @@ generator         yield, yield from, return value          await
 
 Where:
 
-* ""async def func": coroutine;
+* "async def func": coroutine;
 
 * "async def __a*__": ``__aiter__``, ``__anext__``, ``__aenter__``,
   ``__aexit__`` defined with the ``async`` keyword;
