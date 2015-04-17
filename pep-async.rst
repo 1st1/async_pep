@@ -26,20 +26,20 @@ Rationale and Goals
 ===================
 
 Coroutines in Python are usually implemented using generators and the ``yield
-from`` syntax.  Documentation of the asyncio [1]_ module in the standard library
-recommends using the ``@asyncio.coroutine`` decorator to state intent
+from`` syntax.  Documentation of the asyncio [1]_ module in the standard
+library recommends using the ``@asyncio.coroutine`` decorator to state intent
 (documentation) and ease debugging (developer efficiency).  This approach
-requires users to understand generators, most importantly the difference between
-``yield`` and ``yield from``. Existing Python 2-compatible third-party
-frameworks, such as Twisted [12]_, Tornado [13]_, and many others, including the
-``asyncio`` backport trollius [2]_, implement coroutines using ``yield`` and
-trampolines, adding to the confusion.
+requires users to understand generators, most importantly the difference
+between ``yield`` and ``yield from``.  Existing Python 2-compatible third-party
+frameworks, such as Twisted [12]_, Tornado [13]_, and many others, including
+the ``asyncio`` backport trollius [2]_, implement coroutines using ``yield``
+and trampolines, adding to the confusion.
 
 This proposal makes coroutines a first class construct in Python to clearly
 separate them from generators.  This allows unambiguous usage of generators and
-coroutines in the same source file, as well as helps to avoid calling generators
-from coroutines and vice-versa.  It also enables linters and IDEs to improve
-static code analysis and refactoring.
+coroutines in the same source file, as well as helps to avoid calling
+generators from coroutines and vice-versa.  It also enables linters and IDEs to
+improve static code analysis and refactoring.
 
 Introducing the ``async`` keyword enables creation of asynchronous context
 managers and iteration protocols.  The former lets Python perform non-blocking
@@ -113,9 +113,9 @@ validating its argument.  It will only accept:
 
   Any ``yield from`` in asyncio ends up at some ``yield``.  This is a
   fundamental mechanism of how Futures must be implemented.  Since async
-  functions are special kind of generators, every ``await`` will be suspended by
-  a ``yield`` somewhere down the chain of ``await`` calls (please refer to PEP
-  3156 for detailed explanation.)
+  functions are special kind of generators, every ``await`` will be suspended
+  by a ``yield`` somewhere down the chain of ``await`` calls (please refer to
+  PEP 3156 for detailed explanation.)
 
   To enable this behavior for async functions, a new magic method called
   ``__await__`` will be added.  For asyncio, for instance, to enable Future
@@ -126,8 +126,8 @@ validating its argument.  It will only accept:
   the rest of this PEP.
 
   Also, please note that ``__aiter__`` method (see its definition below) cannot
-  be used for this purpose.  It is a different protocol, and would be like using
-  ``__iter__`` instead of ``__call__`` for regular callables.
+  be used for this purpose.  It is a different protocol, and would be like
+  using ``__iter__`` instead of ``__call__`` for regular callables.
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async`` function.
 
@@ -138,9 +138,10 @@ Asynchronous Context Managers and "async with"
 An asynchronous Context Manager will be able to suspend execution in its
 **enter** and **exit** methods.
 
-To make it possible  new protocol for asynchronous context managers is proposed.
-Two new magic methods will be added: ``__aenter__`` and ``__aexit__``.  Both
-must either return a **Future-like** object, or be an ``async`` function.
+To make it possible  new protocol for asynchronous context managers is
+proposed.  Two new magic methods will be added: ``__aenter__`` and
+``__aexit__``.  Both must either return a **Future-like** object, or be an
+``async`` function.
 
 
 New Syntax
@@ -214,7 +215,7 @@ An asynchronous iterator will be able to call asynchronous code in its magic
 **next** implementation.  A new iteration protocol is proposed: an object that
 supports asynchronous iteration must implement a ``__aiter__`` asynchronous
 method, which must in turn return an object with ``__anext__`` asynchronous
-method. ``__anext__`` must raise a ``StopAsyncIteration`` exception when the
+method.  ``__anext__`` must raise a ``StopAsyncIteration`` exception when the
 iteration is over.
 
 Since it is prohibited to have ``yield`` inside async functions, it's not
@@ -389,8 +390,8 @@ in which ``@coroutine`` decorator wraps all functions with a special object
 with overloaded ``__del__``.  Whenever a wrapped generator gets garbage
 collected, a detailed logging message is generated with information about where
 exactly the decorator function was defined, stack trace of where it was
-collected, etc.  Wrapper object also provides a convenient ``__repr__`` function
-with detailed information about the generator.
+collected, etc.  Wrapper object also provides a convenient ``__repr__``
+function with detailed information about the generator.
 
 The only problem is how to enable these debug capabilities.  Since debug
 facilities should be a no-op in production mode, ``@coroutine`` decorator makes
@@ -522,9 +523,9 @@ Transition Period Shortcomings
 
 There is just one.
 
-Until ``async`` and ``await`` are not proper keywords, it is not possible (or at
-least very hard) to fix ``tokenizer.c`` to recognize them on the **same line**
-with ``def`` keyword::
+Until ``async`` and ``await`` are not proper keywords, it is not possible (or
+at least very hard) to fix ``tokenizer.c`` to recognize them on the **same
+line** with ``def`` keyword::
 
     # async and await will always be parsed as variables
 
@@ -537,8 +538,8 @@ with ``def`` keyword::
 Since ``await`` and ``async`` in such cases are parsed as ``NAME`` tokens, a
 ``SyntaxError`` will be raised.
 
-The above examples, however, are hard to parse for humans too, and can be easily
-rewritten to a more readable form::
+The above examples, however, are hard to parse for humans too, and can be
+easily rewritten to a more readable form::
 
     async def outer():                             # 1
         a_default = await fut
@@ -603,8 +604,8 @@ functions in a Future object, but this has the following disadvantages:
 
 2. A new built-in ``Future`` object would need to be added.
 
-3. Coming up with a generic ``Future`` interface that is usable for any use case
-   in any framework is a very hard to solve problem.
+3. Coming up with a generic ``Future`` interface that is usable for any use
+   case in any framework is a very hard to solve problem.
 
 4. It is not a feature that is used frequently, when most of your code is
    coroutines.
@@ -697,17 +698,18 @@ Why magic methods start with "a"
 --------------------------------
 
 New async magic methods ``__aiter__``, ``__anext__``, ``__aenter__``, and
-``__aexit__`` all start with the same prefix "a".  An alternative proposal is to
-use "async" prefix, so that ``__aiter__`` becomes ``__async_iter__``.  However,
-to align new magic methods with the existing ones, such as ``__radd__`` and
-``__iadd__`` it was decided to use a shorter version.
+``__aexit__`` all start with the same prefix "a".  An alternative proposal is
+to use "async" prefix, so that ``__aiter__`` becomes ``__async_iter__``.
+However, to align new magic methods with the existing ones, such as
+``__radd__`` and ``__iadd__`` it was decided to use a shorter version.
 
 
 Why not reuse existing magic names
 ----------------------------------
 
-An alternative idea about new async iterators and context managers was to re-use
-existing magic methods, by adding an ``async`` keyword to their declarations::
+An alternative idea about new async iterators and context managers was to re-
+use existing magic methods, by adding an ``async`` keyword to their
+declarations::
 
     class CM:
         async def __enter__(self): # instead of __aenter__
@@ -736,7 +738,7 @@ of python's official set of benchmarks [5]_:
 
 ::
 
-    python3 perf.py -r -b default ../cpython/python.exe ../cpython-git/python.exe
+    python perf.py -r -b default ../cpython/python.exe ../cpython-aw/python.exe
 
     [skipped]
 
@@ -839,9 +841,9 @@ List of high-level changes and new protocols
 
 While the list of changes and new things is not short, it is important to
 understand, that most users will not use these features directly.  It is
-intended to be used in frameworks and libraries to provide users with convenient
-to use and unambiguous APIs with ``async def``, ``await``, ``async for`` and
-``async with`` syntax.
+intended to be used in frameworks and libraries to provide users with
+convenient to use and unambiguous APIs with ``async def``, ``await``, ``async
+for`` and ``async with`` syntax.
 
 
 Working example
