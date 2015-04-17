@@ -548,6 +548,8 @@ rewritten to a more readable form::
     async def foo():                               # 2
         return (await fut)
 
+This limitation will go away as soon as ``async`` is a proper keyword.
+
 
 Deprecation Plans
 -----------------
