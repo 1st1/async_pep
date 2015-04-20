@@ -96,12 +96,12 @@ Key properties of coroutines:
   requires a future import (see PEP 479).
 
 
-types.async_def()
+types.coroutine()
 -----------------
 
-A new function ``async_def(gen)`` is added to the ``types`` module.  It applies
-``CO_COROUTINE`` flag to the passed generator-function's code object, so that
-it returns a *coroutine object* when called.
+A new function ``coroutine(gen)`` is added to the ``types`` module.  It applies
+``CO_COROUTINE`` flag to the passed generator-function's code object,
+making it to return a *coroutine object* when called.
 
 This feature enables an easy upgrade path for existing libraries.
 
@@ -123,8 +123,8 @@ data.
 It uses the ``yield from`` implementation with an extra step of validating its
 argument.  ``await`` only accepts an *awaitable*, which can be one of:
 
-* A *coroutine object* returned from a coroutine or a generator decorated with
-  ``types.async_def()``.
+* A *coroutine object* returned from a *coroutine* or a generator decorated
+  with ``types.coroutine()``.
 
 * An object with an ``__await__`` method returning an iterator.
 
@@ -648,7 +648,7 @@ statements.  Backwards compatibility is 100% preserved.
 
 The required changes are mainly:
 
-1. Modify ``@asyncio.coroutine`` decorator to use new ``types.async_def()``
+1. Modify ``@asyncio.coroutine`` decorator to use new ``types.coroutine()``
    function.
 
 2. Add ``__await__ = __iter__`` line to ``asyncio.Future`` class.
@@ -976,7 +976,7 @@ List of high-level changes and new protocols
 5. New AST nodes: ``AsyncFunctionDef``, ``AsyncFor``, ``AsyncWith``, ``Await``.
 
 6. New functions: ``sys.set_coroutine_wrapper(callback)``,
-   ``sys.get_coroutine_wrapper()``, and ``types.async_def(gen)``.
+   ``sys.get_coroutine_wrapper()``, and ``types.coroutine(gen)``.
 
 7. New ``CO_COROUTINE`` bit flag for code objects.
 
