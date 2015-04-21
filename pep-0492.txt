@@ -749,6 +749,22 @@ Differences from this proposal:
    3152.
 
 
+Coroutine-generators
+--------------------
+
+With ``async for`` keyword it is desirable to have a concept of a
+*coroutine-generator* -- a coroutine with ``yield`` and ``yield from``
+expressions.  To avoid any ambiguity with regular generators, we would
+likely require to have an ``async`` keyword before ``yield``, and
+``async yield from`` would raise a ``StopAsyncIteration`` exception.
+
+While it is possible to implement coroutine-generators, we believe that
+they are out of scope of this proposal.  It is an advanced concept that
+should be carefully considered and balanced, with a non-trivial changes
+in the implementation of current generator objects.  This is a matter
+for a separate PEP.
+
+
 No implicit wrapping in Futures
 -------------------------------
 
