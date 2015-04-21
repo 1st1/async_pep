@@ -737,7 +737,12 @@ Differences from this proposal:
    addresses this problem with a different approach, see `Debugging
    Features`_.
 
-5. There are no equivalents of ``async for`` and ``async with`` in PEP
+5. A shortcoming of requiring a ``cocall`` keyword to call a coroutine
+   is that if we decide to implement coroutine-generators -- coroutines
+   with ``yield`` or ``async yield`` expressions -- we wouldn't need a
+   ``cocall`` keyword to call them.
+
+6. There are no equivalents of ``async for`` and ``async with`` in PEP
    3152.
 
 
