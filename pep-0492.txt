@@ -754,13 +754,13 @@ Differences from this proposal:
 6. Requiring parentheses grammatically also introduces a whole lot
    of new problems.
 
-   Code like the following::
+   The following code::
 
        await fut
        await function_returning_future()
        await asyncio.gather(coro1(arg1, arg2), coro2(arg1, arg2))
 
-    would look like::
+   would look like::
 
        cocall fut()  # or cocall costart(fut)
        cocall (function_returning_future())()
