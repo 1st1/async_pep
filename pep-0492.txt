@@ -718,7 +718,7 @@ to a more readable form::
     async def foo():                               # 2
         return (await fut)
 
-This limitation will go away as soon as ``async`` and ``await`` ate
+This limitation will go away as soon as ``async`` and ``await`` are
 proper keywords.  Or if it's decided to use a future import for this
 PEP.
 
