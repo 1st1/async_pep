@@ -889,6 +889,14 @@ stating that the statement is asynchronous.  It is also more consistent
 with the existing grammar.
 
 
+Why "async for/with" instead of "await for/with"
+------------------------------------------------
+
+"async" is an adjective, and hence it is a better choice for a
+*statement qualifier* keyword.  "await for/with" would imply that
+something is awaiting for a completion of a for/with statement.
+
+
 Why "async def" and not "def async"
 -----------------------------------
 
