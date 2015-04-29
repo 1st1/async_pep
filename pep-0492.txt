@@ -106,7 +106,9 @@ types.coroutine()
 
 A new function ``coroutine(gen)`` is added to the ``types`` module.  It
 applies ``CO_COROUTINE`` flag to the passed generator-function's code
-object, making it to return a *coroutine object* when called.
+object, making it to return a *coroutine object* when called.  This
+function modifies the passed generator function in-place and returns
+it, therefore can be used as a decorator.
 
 This feature enables an easy upgrade path for existing libraries.
 
