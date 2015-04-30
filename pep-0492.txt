@@ -8,7 +8,7 @@ Type: Standards Track
 Content-Type: text/x-rst
 Created: 09-Apr-2015
 Python-Version: 3.5
-Post-History: 17-Apr-2015, 21-Apr-2015, 27-Apr-2015
+Post-History: 17-Apr-2015, 21-Apr-2015, 27-Apr-2015, 29-Apr-2015
 
 
 Abstract
@@ -583,13 +583,14 @@ generators are treated as distinct concepts:
    An attempt to use ``__iter__`` or ``__next__`` on a *native
    coroutine object* will result in a ``TypeError``.
 
-2. *Plain generators* cannot ``yield from`` *native coroutine objects*.
+2. *Plain generators* cannot ``yield from`` *native coroutine objects*:
+   doing so will result in a ``TypeError``.
 
 3. *generator-based coroutines* (for asyncio code must be decorated
    with ``@asyncio.coroutine``) can ``yield from`` *native coroutine
    objects*.
 
-3. ``inspect.isgenerator()`` and ``inspect.isgeneratorfunction()``
+4. ``inspect.isgenerator()`` and ``inspect.isgeneratorfunction()``
    return ``False`` for *native coroutine objects* and *native
    coroutine functions*.
 
@@ -1168,8 +1169,8 @@ Syntax for asynchronous comprehensions could be provided, but this
 construct is outside of the scope of this PEP.
 
 
-Async lambdas
--------------
+Async lambda functions
+----------------------
 
 Syntax for asynchronous lambda functions could be provided, but this
 construct is outside of the scope of this PEP.
