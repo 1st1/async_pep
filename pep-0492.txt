@@ -110,14 +110,14 @@ Key properties of *coroutines*:
 
 * Internally, two new code object flags were introduced:
 
-  - ``CO_COROUTINE`` is used to enable runtime detection of
-    *coroutines* (and migrating existing code).
-
-  - ``CO_NATIVE_COROUTINE`` is used to mark *native coroutines*
+  - ``CO_COROUTINE`` is used to mark *native coroutines*
     (defined with new syntax.)
 
-  All coroutines have ``CO_COROUTINE``, ``CO_NATIVE_COROUTINE``, and
-  ``CO_GENERATOR`` flags set.
+  - ``CO_ITERABLE_COROUTINE`` is used to make *generator-based
+    coroutines* compatible with *native coroutines* (set by
+    `types.coroutine()`_ function).
+
+  All coroutines have ``CO_GENERATOR`` flag set.
 
 * Regular generators, when called, return a *generator object*;
   similarly, coroutines return a *coroutine* object.
@@ -139,13 +139,13 @@ A new function ``coroutine(gen)`` is added to the ``types`` module.  It
 allows interoperability between existing *generator-based coroutines*
 in asyncio and *native coroutines* introduced by this PEP.
 
-The function applies ``CO_COROUTINE`` flag to generator-function's code
-object, making it return a *coroutine* object.
+The function applies ``CO_ITERABLE_COROUTINE`` flag to generator-
+function's code object, making it return a *coroutine* object.
 
 The function can be used as a decorator, since it modifies generator-
 functions in-place and returns them.
 
-Note, that the ``CO_NATIVE_COROUTINE`` flag is not applied by
+Note, that the ``CO_COROUTINE`` flag is not applied by
 ``types.coroutine()`` to make it possible to separate *native
 coroutines* defined with new syntax, from *generator-based coroutines*.
 
@@ -589,9 +589,8 @@ Coroutine objects
 Differences from generators
 '''''''''''''''''''''''''''
 
-This section applies only to *native coroutines* with
-``CO_NATIVE_COROUTINE`` flag, i.e. defined with the new ``async def``
-syntax.
+This section applies only to *native coroutines* with ``CO_COROUTINE``
+flag, i.e. defined with the new ``async def`` syntax.
 
 **The behavior of existing *generator-based coroutines* in asyncio
 remains unchanged.**
@@ -1312,7 +1311,7 @@ List of high-level changes and new protocols
    ``inspect.iscoroutinefunction()``, ``inspect.iscoroutine()``,
    and ``inspect.isawaitable()``.
 
-7. New ``CO_COROUTINE`` and ``CO_NATIVE_COROUTINE`` bit flags for code
+7. New ``CO_COROUTINE`` and ``CO_ITERABLE_COROUTINE`` bit flags for code
    objects.
 
 While the list of changes and new things is not short, it is important
