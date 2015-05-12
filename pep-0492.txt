@@ -3,12 +3,12 @@ Title: Coroutines with async and await syntax
 Version: $Revision$
 Last-Modified: $Date$
 Author: Yury Selivanov <yselivanov@sprymix.com>
-Status: Accepted
+Discussions-To: <python-dev@python.org>
+Status: Final
 Type: Standards Track
 Content-Type: text/x-rst
 Created: 09-Apr-2015
 Python-Version: 3.5
-Discussions-To: <python-dev@python.org>
 Post-History: 17-Apr-2015, 21-Apr-2015, 27-Apr-2015, 29-Apr-2015, 05-May-2015
 
 
@@ -199,8 +199,8 @@ can be one of:
   It is a ``TypeError`` if ``__await__`` returns anything but an
   iterator.
 
-* Objects defined with CPython C API with a ``tp_await`` function,
-  returning an iterator (similar to ``__await__`` method).
+* Objects defined with CPython C API with a ``tp_as_async->am_await``
+  function, returning an *iterator* (similar to ``__await__`` method).
 
 It is a ``SyntaxError`` to use ``await`` outside of an ``async def``
 function (like it is a ``SyntaxError`` to use ``yield`` outside of
@@ -725,11 +725,11 @@ Glossary
 
 :Future-like object:
     An object with an ``__await__`` method, or a C object with
-    ``tp_await`` function, returning an iterator.  Can be consumed by
-    an ``await`` expression in a coroutine. A coroutine waiting for a
-    Future-like object is suspended until the Future-like object's
-    ``__await__`` completes, and returns the result.  See `Await
-    Expression`_ for details.
+    ``tp_as_async->am_await`` function, returning an *iterator*.  Can be
+    consumed by an ``await`` expression in a coroutine. A coroutine
+    waiting for a Future-like object is suspended until the Future-like
+    object's ``__await__`` completes, and returns the result.  See
+    `Await Expression`_ for details.
 
 :Awaitable:
     A *Future-like* object or a *coroutine* object.  See `Await
@@ -1294,14 +1294,15 @@ List of high-level changes and new protocols
    keyword.
 
 2. New ``__await__`` method for Future-like objects, and new
-   ``tp_await`` slot in ``PyTypeObject``.
+   ``tp_as_async->am_await`` slot in ``PyTypeObject``.
 
 3. New syntax for asynchronous context managers: ``async with``.  And
    associated protocol with ``__aenter__`` and ``__aexit__`` methods.
 
 4. New syntax for asynchronous iteration: ``async for``.  And
    associated protocol with ``__aiter__``, ``__aexit__`` and new built-
-   in exception ``StopAsyncIteration``.
+   in exception ``StopAsyncIteration``.  New ``tp_as_async->am_aiter``
+   and ``tp_as_async->am_anext`` slots in ``PyTypeObject``.
 
 5. New AST nodes: ``AsyncFunctionDef``, ``AsyncFor``, ``AsyncWith``,
    ``Await``.
@@ -1361,7 +1362,12 @@ Acceptance
 
 PEP 492 was accepted by Guido, Tuesday, May 5, 2015 [14]_.
 
-The reference implementation is tracked in issue 24017 [15]_.
+
+Implementation
+==============
+
+The implementation is tracked in issue 24017 [15]_. It was
+committed on May 11, 2015.
 
 
 References
@@ -1403,8 +1409,8 @@ I thank Guido van Rossum, Victor Stinner, Elvis Pranskevichus, Andrew
 Svetlov, Łukasz Langa, Greg Ewing, Stephen J. Turnbull, Jim J. Jewett,
 Brett Cannon, Nick Coghlan, Steven D'Aprano, Paul Moore, Nathaniel
 Smith, Ethan Furman, Stefan Behnel, Paul Sokolovsky, Victor Petrovykh,
-and many others for their feedback, ideas, edits, criticism, and
-discussions around this PEP.
+and many others for their feedback, ideas, edits, criticism, code
+reviews, and discussions around this PEP.
 
 
 Copyright
